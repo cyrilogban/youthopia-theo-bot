@@ -7,7 +7,7 @@ import telebot
 import json
 import random
 import logging
-import re  # <--- CRITICAL IMPORT
+import re 
 from flask import Flask
 import certifi
 from pymongo import MongoClient
@@ -300,11 +300,10 @@ def get_verse_markup(verse_data, current_translation="web"):
     markup = telebot.types.InlineKeyboardMarkup()
     
     # 1. Share Button (Uses Telegram Share URL)
-    # Reverted to clean share without promotional header
     share_text = f"{verse_data['reference']} ({current_translation.upper()})\n\n{verse_data['text']}"
     
     share_url = f"https://t.me/share/url?url={requests.utils.quote(share_text)}"
-    markup.add(telebot.types.InlineKeyboardButton("📤 Share with Friends", url=share_url))
+    markup.add(telebot.types.InlineKeyboardButton(" Share verse", url=share_url))
     
     # 2. Translation Buttons
     ref = verse_data['reference']
@@ -381,7 +380,7 @@ def send_morning_verse():
     for group in all_groups:
         chat_id = group["_id"]
         try:
-            bot.send_message(chat_id, f"*Good Morning!*\n\n{text}", reply_markup=markup)
+            bot.send_message(chat_id, f"*Good Morning!*\n\n *Today's verse*:\n\n{text}", reply_markup=markup)
             success_count += 1
             time.sleep(0.5)
         except telebot.apihelper.ApiTelegramException as e:
