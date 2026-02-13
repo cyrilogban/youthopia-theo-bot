@@ -116,7 +116,6 @@ VERSE_REGEX = re.compile(
     re.IGNORECASE 
 )
 
-# UPDATED: Default verse is now a Dictionary so buttons work even if API fails
 DEFAULT_VERSE = {
     "reference": "Psalm 23:1",
     "text": "The LORD is my shepherd, I lack nothing."
@@ -135,9 +134,7 @@ except Exception as e:
     BOT_ID = 0
 
 # --- DATABASE CLASSES ---
-
 class MockDatabase:
-    """A Fake Database for Local Testing (Used when Real DB fails)"""
     def __init__(self):
         self.groups = []
         logger.warning("WARNING: RUNNING IN DUMMY MODE (Mock DB). Data will be lost on restart.")
@@ -159,8 +156,6 @@ class MockDatabase:
         return self.groups
 
 class Database:
-    """Database handler with connection pooling and error handling"""
-    
     def __init__(self, uri):
         self.client = None
         self.db = None
@@ -175,7 +170,6 @@ class Database:
                 serverSelectionTimeoutMS=5000,
                 maxPoolSize=50
             )
-            # Test connection
             self.client.admin.command('ping')
             self.db = self.client["youthopia_db"]
             self.groups_col = self.db["subscribed_groups"]
@@ -185,7 +179,6 @@ class Database:
             raise
     
     def add_group(self, chat_id, chat_name, joined_date):
-        """Add a new group to the database"""
         try:
             if self.groups_col.count_documents({"_id": chat_id}) == 0:
                 self.groups_col.insert_one({
@@ -203,7 +196,6 @@ class Database:
             return False
     
     def get_all_groups(self):
-        """Retrieve all subscribed groups"""
         try:
             return list(self.groups_col.find())
         except Exception as e:
@@ -211,9 +203,7 @@ class Database:
             return []
     
     def remove_group(self, chat_id):
-        """Remove a group from the database"""
         try:
-            # Try removing as Int and String to be safe
             result_int = self.groups_col.delete_one({"_id": chat_id})
             result_str = self.groups_col.delete_one({"_id": str(chat_id)})
             
@@ -226,22 +216,17 @@ class Database:
             return False
 
 # --- SMART DATABASE SWITCH ---
-# FIX: Prevents "Zombie Mode" on production.
 db_handler = None
 
 if not MONGO_URI:
-    # Scenario 1: No Link provided (Local Testing / Random Editor)
     logger.warning("⚠️ MONGO_URI not found. Using MockDatabase (Data will be lost on restart).")
     db_handler = MockDatabase()
 else:
-    # Scenario 2: Link provided (Production / Render)
     try:
         db_handler = Database(MONGO_URI)
     except Exception as e:
-        # If the Real DB fails, we MUST crash so the server restarts.
-        # Do not switch to MockDB here, or you will lose user data!
         logger.critical(f"❌ Failed to connect to Real MongoDB: {e}")
-        raise e  # Stops the bot completely
+        raise e 
 
 # --- KEEP-ALIVE SERVER ---
 app = Flask(__name__)
@@ -256,7 +241,6 @@ def home():
 
 @app.route('/health')
 def health():
-    """Health check endpoint"""
     try:
         if isinstance(db_handler, Database):
             db_handler.client.admin.command('ping')
@@ -284,7 +268,6 @@ def keep_alive():
 # --- HELPER FUNCTIONS ---
 
 def main_menu_keyboard():
-    """Creates the professional menu buttons with Subscribe option"""
     markup = telebot.types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     
     btn_verse = telebot.types.KeyboardButton("Get Verse")
@@ -296,19 +279,14 @@ def main_menu_keyboard():
     return markup
 
 def get_verse_markup(verse_data, current_translation="web"):
-    """Creates Inline Buttons for Sharing and Translation Switching"""
     markup = telebot.types.InlineKeyboardMarkup()
     
-    # 1. Share Button (Uses Telegram Share URL)
     share_text = f"{verse_data['reference']} ({current_translation.upper()})\n\n{verse_data['text']}"
-    
     share_url = f"https://t.me/share/url?url={requests.utils.quote(share_text)}"
     markup.add(telebot.types.InlineKeyboardButton(" Share verse", url=share_url))
     
-    # 2. Translation Buttons
     ref = verse_data['reference']
     
-    # Create row of buttons. Highlight the current one with brackets []
     btn_web = telebot.types.InlineKeyboardButton(
         "[WEB]" if current_translation == "web" else "WEB", 
         callback_data=f"trans|web|{ref}"
@@ -345,7 +323,7 @@ def fetch_verse_from_api(reference, translation="web"):
         
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-        return response.json() # Returns the raw data dictionary
+        return response.json() 
     except Exception as e:
         logger.error(f"API request failed: {e}")
         return None
@@ -353,24 +331,19 @@ def fetch_verse_from_api(reference, translation="web"):
 def get_random_verse():
     verse_list = load_verse_references()
     
-    # Try 3 times to get a verse
     for _ in range(3):
-        # Pick reference
         selected_ref = random.choice(verse_list) if verse_list else "John 3:16"
-        # Fetch data
         verse_data = fetch_verse_from_api(selected_ref)
         if verse_data:
-            return verse_data # Returns dictionary: {'reference': '...', 'text': '...'}
+            return verse_data 
         time.sleep(0.5)
     
-    # Fallback if API fails (Uses the Dictionary now)
     return DEFAULT_VERSE
 
 def send_morning_verse():
     logger.info("Starting morning verse broadcast...")
     data = get_random_verse()
     
-    # Prepare text and buttons
     text = f"*{data['reference']}* (WEB)\n\n{data['text'].strip()}"
     markup = get_verse_markup(data, "web")
     
@@ -383,7 +356,7 @@ def send_morning_verse():
             bot.send_message(chat_id, f"*Good Morning!*\n\n *Today's verse*:\n\n{text}", reply_markup=markup)
             success_count += 1
             time.sleep(0.5)
-        except telebot.apihelper.ApiTelegramException as e:
+        except telebot.apihelper.ApiTelegramException as e: 
             if e.error_code in [403, 400]:
                 db_handler.remove_group(chat_id)
             else:
@@ -442,22 +415,16 @@ def send_help(message):
     )
     bot.reply_to(message, help_text)
 
-# --- UNIFIED REGISTER COMMAND ---
 @bot.message_handler(commands=["register"])
 def register(m):
-    """Fix for: 'I am in the group but bot is silent'"""
-    
-    # 1. Safety Check (If DB is missing completely)
     if db_handler is None:
         bot.reply_to(m, "Critical Error: Database not initialized.")
         return
 
-    # 2. Check if this is a private chat (The Bouncer)
     if m.chat.type == "private":
         bot.reply_to(m, "This command is for Groups only.\n\nAdd me to a Group and type /register there to set up daily verses!")
         return
 
-    # 3. Proceed with registration if it's a group (The Guest List)
     if db_handler.add_group(m.chat.id, m.chat.title, m.date):
         bot.reply_to(m, "Success! This group is now registered for daily verses.")
     else:
@@ -465,13 +432,8 @@ def register(m):
 
 @bot.message_handler(commands=["force_verse"])
 def force_verse(m):
-    """Secured Test command - Only the Admin can use this"""
-    
-    # SECURITY CHECK: Is this the Admin?
     if m.from_user.id != ADMIN_ID:
-        # Log the attempt so you know someone tried it
         logger.warning(f"Unauthorized broadcast attempt by {m.from_user.first_name} (ID: {m.from_user.id})")
-        # Ignore them (Security through silence)
         return
 
     bot.reply_to(m, "Authorized. Sending verse blast now...")
@@ -479,9 +441,7 @@ def force_verse(m):
 
 @bot.message_handler(commands=["reset_group"])
 def reset_group(m):
-    """Safely removes group/user from DB (Admins Only in Groups)"""
     try:
-        # 1. Private Chat Logic (Users can always unsubscribe themselves)
         if m.chat.type == "private":
             if db_handler.remove_group(m.chat.id):
                 bot.reply_to(m, "Memory wiped! You are unsubscribed.")
@@ -489,16 +449,12 @@ def reset_group(m):
                 bot.reply_to(m, "You were not subscribed.")
             return
 
-        # 2. Group Chat Logic (SECURITY CHECK)
-        # Check if the user is an Admin or Creator
         member = bot.get_chat_member(m.chat.id, m.from_user.id)
         
-        # Allow if they are Admin, Creator, OR if it is YOU (The Bot Owner)
         if member.status not in ['administrator', 'creator'] and m.from_user.id != ADMIN_ID:
             bot.reply_to(m, "❌ Permission Denied. Only Group Admins can run this command.")
             return
 
-        # 3. Perform Removal
         if db_handler.remove_group(m.chat.id):
             bot.reply_to(m, "🗑️ Memory wiped! This group is unsubscribed.")
         else:
@@ -510,16 +466,9 @@ def reset_group(m):
 @bot.message_handler(commands=["verse"])
 def send_verse(message):
     try:
-        # 1. Get Dictionary Data
         data = get_random_verse()
-        
-        # 2. Format Text
         msg_text = f"*{data['reference']}* (WEB)\n\n{data['text'].strip()}"
-        
-        # 3. Create Buttons using the helper function
         markup = get_verse_markup(data, "web")
-        
-        # 4. Send with Buttons
         bot.reply_to(message, msg_text, reply_markup=markup)
     except Exception as e:
         logger.error(f"Error in /verse command: {e}")
@@ -547,7 +496,6 @@ def ping(message):
 @bot.message_handler(content_types=["new_chat_members"])
 def on_join(message):
     for new_member in message.new_chat_members:
-        # --- CRITICAL FIX: Use Cached BOT_ID ---
         if new_member.id == BOT_ID:
             chat_id = message.chat.id
             chat_name = message.chat.title or "Unknown Group"
@@ -573,32 +521,24 @@ def on_join(message):
 
 @bot.message_handler(content_types=["left_chat_member"])
 def on_leave(message):
-    # Use Cached BOT_ID
     if message.left_chat_member.id == BOT_ID:
         chat_id = message.chat.id
         db_handler.remove_group(chat_id)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("trans|"))
 def handle_translation_switch(call):
-    """Updates the verse text when a translation button is clicked"""
     try:
-        # Parse the data we hid in the button: "trans|kjv|John 3:16"
         _, new_trans, ref = call.data.split("|", 2)
-        
-        # Fetch the NEW translation
         new_data = fetch_verse_from_api(ref, new_trans)
         
         if new_data:
-            # Create the new text
             new_text = f"*{new_data['reference']}* ({new_trans.upper()})\n\n{new_data['text'].strip()}"
-            
-            # Update the message in the chat (Edit Message)
             bot.edit_message_text(
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id,
                 text=new_text,
                 parse_mode="Markdown",
-                reply_markup=get_verse_markup(new_data, new_trans) # Update buttons too
+                reply_markup=get_verse_markup(new_data, new_trans)
             )
             bot.answer_callback_query(call.id, f"Switched to {new_trans.upper()}")
             
@@ -606,45 +546,36 @@ def handle_translation_switch(call):
         logger.error(f"Translation switch failed: {e}")
         bot.answer_callback_query(call.id, "Failed to switch translation.")
 
-# --- PASSIVE LISTENER HANDLER (MUST BE ABOVE HANDLE_TEXT) ---
+
+# --- PASSIVE LISTENER HANDLER (THE CIRCUIT BREAKER IS HERE) ---
 @bot.message_handler(func=lambda m: VERSE_REGEX.search(m.text))
 def handle_passive_verse(message):
-    """
-    Listens for patterns like 'John 3:16' or 'Matt 3 vs 4'
-    and replies with the scripture automatically.
-    """
+    
+    # 1. THE CIRCUIT BREAKER: Stop Infinite Loops
+    if message.from_user.id == BOT_ID or message.from_user.is_bot:
+        return
+
     try:
-        # 1. Find the match in the user's text
         match = VERSE_REGEX.search(message.text)
         if not match: return
 
-        # 2. Extract the parts (Book, Chapter, Separator, Verse)
-        # Group 1 is Book, Group 2 is Chapter, Group 4 is Verse
         book = match.group(1)
         chapter = match.group(2)
         verse_num = match.group(4)
         
-        # 3. Construct a clean reference (e.g., "Matthew 3:16")
         reference = f"{book} {chapter}:{verse_num}"
-        
-        # 4. Fetch from API
-        # We pass the constructed reference to your existing function
         data = fetch_verse_from_api(reference)
         
         if data:
-            # 5. Send Reply (Using your existing Button Helper)
-            # We use 'reply_to_message_id' so Theo quotes the specific message
             text = f"*{data['reference']}* (WEB)\n\n{data['text'].strip()}"
             markup = get_verse_markup(data, "web")
             
             bot.reply_to(message, text, reply_markup=markup)
-            
-            # Log it so you know it's working
             logger.info(f"Auto-detected verse: {reference} from {message.from_user.first_name}")
             
     except Exception as e:
-        # If it wasn't a real verse (e.g. 'Matrix 1:1'), just stay silent
         logger.warning(f"Passive listener error: {e}")
+
 
 # --- TEXT HANDLER (MUST BE LAST) ---
 @bot.message_handler(func=lambda m: True)
@@ -659,10 +590,8 @@ def handle_text(m):
         send_help(m)
         
     elif text == "Subscribe":
-        # If in a group, use Title. If Private DM, use First Name.
         name = m.chat.title or m.from_user.first_name or "Subscriber"
         
-        # Save to database (Treating the User ID just like a Group ID)
         if db_handler.add_group(m.chat.id, name, m.date):
             bot.reply_to(m, "Subscribed! You will receive daily verses in your DM every morning.")
         else:
@@ -675,16 +604,13 @@ def handle_text(m):
 if __name__ == "__main__":
     logger.info("Starting Theo Bot...")
 
-    # --- MENU CONFIGURATION (Small Caps Style) ---
     desc_verse = "ɢᴇᴛ ᴀ ʀᴀɴᴅᴏᴍ ᴠᴇʀsᴇ"
     desc_help = "sʜᴏᴡ ᴜsᴀɢᴇ ɪɴsᴛʀᴜᴄᴛɪᴏɴs"
     desc_ping = "ᴄʜᴇᴄᴋ ᴄᴏɴɴᴇᴄᴛɪᴏɴ sᴛᴀᴛᴜs"
     desc_start = "ʀᴇsᴛᴀʀᴛ ʙᴏᴛ ɪɴᴛᴇʀᴀᴄᴛɪᴏɴ"
     desc_reg = "ʀᴇɢɪsᴛᴇʀ ɢʀᴏᴜᴘ ғᴏʀ ᴅᴀɪʟʏ ᴠᴇʀsᴇs"
 
-    # --- SMART MENU SYSTEM ---
     try:
-        # 1. Menu for Private Chats (Hides /register)
         bot.set_my_commands(
             commands=[
                 telebot.types.BotCommand("verse", desc_verse),
@@ -695,7 +621,6 @@ if __name__ == "__main__":
             scope=telebot.types.BotCommandScopeAllPrivateChats()
         )
 
-        # 2. Menu for Groups (Shows /register)
         bot.set_my_commands(
             commands=[
                 telebot.types.BotCommand("verse", desc_verse),
@@ -709,14 +634,11 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"Failed to set menus: {e}")
 
-    # Start keep-alive server
     keep_alive()
     
-    # Start scheduler thread
     scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
     scheduler_thread.start()
     
-    # Start bot polling
     logger.info("Theo is now running and ready to serve!")
     
     while True:
