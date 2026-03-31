@@ -1,3 +1,20 @@
+# Personal notes
+PROJECT_WIRING_GUIDE.md
+SECURITY_AUDIT.md
+
+# Environment
 .env
-*.env
-pycache/ 
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+.venv/
+
+# IDE
+.vscode/
+
+# Pytest
+.pytest_cache/
