@@ -83,6 +83,7 @@ from theo.adapters.telegram.router import register_routes
 
 from theo.infra.scheduler.aps import start_scheduler
 from theo.core.services.schedule_service import daily_job
+from theo.app.keep_alive import keep_alive
 
 logger = logging.getLogger(__name__)
 
@@ -98,16 +99,20 @@ def main() -> None:
     bot = create_bot(settings)
 
     # Set command menu
-    commands = [
-        telebot.types.BotCommand("/start", "Begin using Theo"),
-        telebot.types.BotCommand("/verse", "Get a scripture"),
-        telebot.types.BotCommand("/status", "Check subscription status"),
-        telebot.types.BotCommand("/enable_votd", "Enable daily verses"),
-        telebot.types.BotCommand("/disable_votd", "Stop daily verses"),
-        telebot.types.BotCommand("/translation", "Change Bible version"),
-        telebot.types.BotCommand("/help", "Show all commands"),
-    ]
-    bot.set_my_commands(commands)
+    try:
+        commands = [
+            telebot.types.BotCommand("start", "Begin using Theo"),
+            telebot.types.BotCommand("verse", "Get a scripture"),
+            telebot.types.BotCommand("status", "Check subscription status"),
+            telebot.types.BotCommand("enable_votd", "Enable daily verses"),
+            telebot.types.BotCommand("disable_votd", "Stop daily verses"),
+            telebot.types.BotCommand("translation", "Change Bible version"),
+            telebot.types.BotCommand("help", "Show all commands"),
+        ]
+        bot.set_my_commands(commands)
+        logger.info("Bot commands menu updated successfully.")
+    except Exception as e:
+        logger.error(f"Failed to set bot commands: {e}")
 
     register_routes(bot, container)
 
