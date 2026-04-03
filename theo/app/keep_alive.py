@@ -11,8 +11,8 @@ def home():
 def run():
     # Render assigns a dynamic PORT, we must listen to it
     port = int(os.environ.get("PORT", 8080))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
 
 def keep_alive():
-    t = Thread(target=run)
+    t = Thread(target=run, daemon=True, name="keep-alive-server")
     t.start()

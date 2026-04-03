@@ -98,6 +98,8 @@ def main() -> None:
     # bot is created separately
     bot = create_bot(settings)
 
+    # Start a lightweight HTTP server so hosting platforms can keep the app alive.
+    keep_alive()
     # Set command menu
     try:
         commands = [
@@ -135,3 +137,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
