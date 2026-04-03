@@ -72,6 +72,7 @@ def register_verse(bot: telebot.TeleBot, container: Container) -> None:
                     verse_response.category,
                     verse_response.reference.reference,
                 ),
+                parse_mode="HTML",
             )
         except UnknownCategoryError:
             bot.reply_to(
@@ -107,6 +108,7 @@ def register_verse(bot: telebot.TeleBot, container: Container) -> None:
                     verse_response.category,
                     verse_response.reference.reference,
                 ),
+                parse_mode="HTML",
             )
             bot.answer_callback_query(call.id)
         except UnknownCategoryError:
@@ -270,3 +272,4 @@ def register_verse(bot: telebot.TeleBot, container: Container) -> None:
         bot.answer_callback_query(call.id)
 
   
+

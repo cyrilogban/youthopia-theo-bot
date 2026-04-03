@@ -103,7 +103,7 @@ def register_autodetect(bot: telebot.TeleBot, container: Container) -> None:
                 f"I couldn't fetch these references right now: {', '.join(failed_references)}"
             )
 
-        bot.reply_to(message, reply_text)
+        bot.reply_to(message, reply_text, parse_mode="HTML")
 
     @bot.message_handler(
         content_types=["text"],
@@ -113,3 +113,4 @@ def register_autodetect(bot: telebot.TeleBot, container: Container) -> None:
     )
     def _autodetect(message: telebot.types.Message) -> None:
         _reply_with_detected_scriptures(message)
+

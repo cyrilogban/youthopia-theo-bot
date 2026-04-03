@@ -8,7 +8,7 @@ Theo is not just a chatbot. It is a community-centered tool that reflects the he
 
 ---
 
-## About YouThopia
+## About YouThopia Bible Commununity
 
 YOUTHOPIA BIBLE COMMUNITY is a faith-driven digital community focused on:
 
@@ -21,7 +21,6 @@ Theo exists to support this mission digitally.
 
 “Sharing God’s Love All The Way.”
 
----
 
 ## What Theo Currently Does
 
@@ -35,7 +34,6 @@ Theo responds to users in a natural, conversational way.
 * Shares thoughts based on Christian principles
 * Acts as a companion for everyday conversations
 
----
 
 ### 2. Scripture Support (Basic)
 
@@ -44,13 +42,12 @@ Theo can provide Bible verses when needed.
 * Responds with relevant scriptures
 * Helps users reflect on God’s word
 
----
 
 ### 3. Simple Personalization
 
 Theo may use basic information like a user’s name (from Telegram) to make conversations feel more personal.
 
----
+
 
 ## What Theo is NOT (Yet)
 
@@ -63,13 +60,12 @@ To keep expectations clear:
 
 Theo is still in its early stage and is being built step by step.
 
----
+
 
 ## Vision
 
 To build a deeply personal and intelligent spiritual companion that helps every YouTopian grow in faith, discipline, and purpose.
 
----
 
 ## Future Goals (Planned Features)
 
@@ -83,7 +79,7 @@ Theo is designed to evolve over time. Planned improvements include:
 * Community engagement features
 * Multi-bot ecosystem integration (Theo, Pete, etc.)
 
----
+
 
 ## System Architecture (Simple View)
 
@@ -94,7 +90,7 @@ Theo is built with a modular structure:
 * AI Layer → Processes input and generates replies
 * Data Layer → Stores basic data (if needed)
 
----
+
 
 ## Tech Stack
 
@@ -103,7 +99,6 @@ Theo is built with a modular structure:
 * OpenAI API (for AI responses)
 * SQLite (basic storage, optional)
 
----
 
 ## Project Structure
 
@@ -116,7 +111,7 @@ theo/
 ├── services/
 ├── utils/
 └── README.md
----
+
 
 ## Development Approach
 
@@ -127,7 +122,7 @@ Theo is being built iteratively:
 * Improve based on real user needs
 * Gradually add intelligence and structure
 
----
+
 
 ## Contribution Guidelines
 
@@ -136,7 +131,7 @@ Theo is being built iteratively:
 3. Make your changes
 4. Submit a pull request
 
----
+
 
 ## Philosophy Behind Theo
 
@@ -148,7 +143,7 @@ It is designed to:
 * Support the YouThopia community
 * Encourage consistency in faith
 
----
+
 
 ## Final Note
 

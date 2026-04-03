@@ -2,12 +2,16 @@
 
 ## Current State
 - Telegram bot is running with command handlers, inline actions, and daily scheduling
+- Keep-alive HTTP server is wired into startup for hosting platforms that expect a bound port
 - Daily VOTD is scheduled for 6:00 AM Africa/Lagos
 - VOTD now works for both groups and DM subscriptions
 - Daily VOTD now greets users by first name in DMs and greets groups by group title
 - Category-based scripture flow is working
 - Auto-detect scripture references in DMs and groups is working
 - Translation system is wired through the live verse-delivery paths with `kjv` as default
+- Scripture output now uses Telegram quote-style formatting
+- Long or multi-line scripture output now uses expandable quote blocks
+- HTML parse mode is applied only on scripture-delivery paths; the bot default still stays opt-in
 - Supported translations are:
   - `kjv`
   - `web`
@@ -17,7 +21,7 @@
 - First-time user tracking system operational (in-memory cache with 1-hour TTL)
 - Group join welcome messages with VOTD verses
 - Bot mention detection in groups (@iamtheobot tagging)
-- Professional UI with compact emoji buttons (3 per row: 🙏 ❤️ ☮️ 😊 ✨ ⏳)
+- Professional UI with compact emoji buttons (3 per row)
 - Command menu configured and visible in Telegram
 - Handler optimization: bot username cached at startup (not called per-message)
 
@@ -53,7 +57,11 @@
   - category scripture replies
   - auto-detected scripture replies
   - daily VOTD delivery
-- Verse output now shows translation labels like `(KJV)`
+- Wired keep-alive startup into `main.py`
+- Verse output now shows translation labels like `(KJV)` 
+- Verse output now renders as Telegram blockquotes instead of plain quoted text 
+- Added expandable scripture formatting for long and multi-verse output 
+- Kept global bot parse mode unchanged and applied HTML only to scripture sends/edits
 - Daily VOTD now includes a personalized greeting before the verse
 
 ## Recently Completed (Session 2)
@@ -79,6 +87,10 @@
 - Existing tests still cover category detection and verse service basics
 - Added parser test file:
   - `test_reference_detection_service.py`
+- Added verse-formatting coverage for:
+  - standard Telegram blockquote rendering
+  - expandable blockquote rendering for long or multi-line scripture
+  - HTML escaping in scripture output
 - Automated verification from terminal has been limited by local Python / PowerShell environment issues
 - Live Telegram testing is still important for validation
 
@@ -95,12 +107,13 @@
 - Translation preference now exists and is wired into live delivery, but broader live validation is still needed
 - Group-specific timezone scheduling is not implemented yet
 - Some tests still need to be expanded for translation-aware flows and scheduler behavior
+- Quote-style rendering still needs live validation across Telegram clients
 - Security vulnerabilities identified (see SECURITY_AUDIT.md for details)
 
 ## Next Steps
 - Implement AI reflection generation only
 - Add translation-aware tests
-- Add cleaner reply formatting polish
+- Live-verify Telegram quote and expandable scripture rendering
 - Decide whether group translation should stay shared per chat or become more advanced later
 - Design timezone-aware delivery for global scaling
 
@@ -152,7 +165,7 @@ I hope to add the following features to Theo:
 - **Scripture Companion Mode**
   Instead of only replying to commands, the bot can answer:
   - `I feel overwhelmed`
-  - `I can�t forgive someone`
+  - `I can't forgive someone`
   - `I need peace`
   Then detect the need and respond with verse + reflection.
 
@@ -194,5 +207,4 @@ I hope to add the following features to Theo:
   - Group join
   - Group mention (@botname)
 - Security vulnerabilities from audit should be addressed before production deployment
-
 

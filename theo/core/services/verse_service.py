@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from html import escape
 import json
 from pathlib import Path
 import random
@@ -19,7 +20,7 @@ VERSE_API_URL = "https://bible-api.com/"
 REQUEST_TIMEOUT_SECONDS = 15
 REQUEST_RETRY_ATTEMPTS = 3
 VERSE_CONFIG_PATH = Path(__file__).resolve().parents[2] / "data" / "verses.json"
-
+EXPANDABLE_QUOTE_MIN_CHARS = 220
 
 class VerseServiceError(RuntimeError):
     """Raised when the verse service cannot complete a request."""
@@ -193,8 +194,17 @@ def format_reference_message(
     normalized_translation = get_translation_or_default(translation)
     translation_label = get_translation_label(normalized_translation)
     cleaned_text = verse_text.strip()
-    body = cleaned_text if "\n" in cleaned_text else f"\"{cleaned_text}\""
-    return f"\U0001F4D6 {reference} ({translation_label})\n\n{body}"
+    escaped_reference = escape(reference)
+    escaped_body = escape(cleaned_text)
+    quote_tag = (
+        "blockquote expandable"
+        if _should_use_expandable_quote(cleaned_text)
+        else "blockquote"
+    )
+    return (
+        f"\U0001F4D6 {escaped_reference} ({translation_label})\n\n"
+        f"<{quote_tag}>{escaped_body}</blockquote>"
+    )
 
 
 
@@ -224,6 +234,10 @@ def _fetch_verse_text(
 
 
 
+def _should_use_expandable_quote(verse_text: str) -> bool:
+    return "\n" in verse_text or len(verse_text) >= EXPANDABLE_QUOTE_MIN_CHARS
+
+
 def _format_api_verses(verses: list[dict[str, Any]]) -> str:
     if len(verses) == 1:
         verse_text = str(verses[0].get("text", "")).strip()
@@ -245,3 +259,4 @@ def _format_api_verses(verses: list[dict[str, Any]]) -> str:
         raise VerseLookupError("Empty multi-verse payload returned from API.")
 
     return "\n".join(formatted_lines)
+

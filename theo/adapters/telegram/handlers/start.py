@@ -58,9 +58,10 @@ def _send_welcome_with_votd(
         bot.send_message(
             message.chat.id,
             verse_message,
-            reply_markup=build_category_picker_compact(list_categories())
+            reply_markup=build_category_picker_compact(list_categories()),
+            parse_mode="HTML",
         )
-        
+
         # Send call-to-action
         cta_text = (
             "Want to explore more? Pick a theme above."
@@ -90,3 +91,4 @@ def _send_simple_welcome(
         reply_markup=build_category_picker_compact(list_categories()),
         parse_mode="Markdown"
     )
+

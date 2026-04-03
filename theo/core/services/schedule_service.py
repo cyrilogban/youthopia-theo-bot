@@ -1,6 +1,7 @@
 # theo/core/services/schedule_service.py
 
 import logging
+from html import escape
 
 from telebot import TeleBot
 
@@ -82,7 +83,9 @@ def daily_job(container: Container, bot: TeleBot) -> None:
 
             bot.send_message(
                 g.chat_id,
-                f"{intro}\n\n{verse_message}",
+                f"{escape(intro)}\n\n{verse_message}",
+                parse_mode="HTML",
             )
         except Exception:
             logger.exception(f"Failed to send daily VOTD message to {g.chat_id}")
+

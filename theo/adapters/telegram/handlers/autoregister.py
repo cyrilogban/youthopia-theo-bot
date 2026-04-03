@@ -149,9 +149,10 @@ def _send_group_welcome(bot: telebot.TeleBot, chat_id: int) -> None:
         bot.send_message(
             chat_id,
             verse_message,
-            reply_markup=build_category_picker_compact(list_categories())
+            reply_markup=build_category_picker_compact(list_categories()),
+            parse_mode="HTML",
         )
-        
+
         # Send admin note
         admin_text = (
             "*Admins:* Enable daily verses with /enable_votd"
@@ -190,7 +191,8 @@ def _send_welcome_with_votd(
         bot.send_message(
             message.chat.id,
             verse_message,
-            reply_markup=build_category_picker_compact(list_categories())
+            reply_markup=build_category_picker_compact(list_categories()),
+            parse_mode="HTML",
         )
         
         # Send call-to-action
