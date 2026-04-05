@@ -1,154 +1,168 @@
-# THEO — AI Spiritual Companion for YouThopia Bible Community
+# Theo
 
-## Overview
+Theo is a Telegram Bible bot built for the YouThopia Bible Community. It delivers daily scripture, category-based verse lookup, translation-aware responses, and automatic Bible reference detection for both private chats and groups.
 
-Theo(Theophilus) is an AI-powered spiritual companion built for the YOUTHOPIA BIBLE COMMUNITY. It is designed as a simple but meaningful tool to support YouTopians in their daily walk with God through conversations, encouragement, and scripture.
+## Highlights
 
-Theo is not just a chatbot. It is a community-centered tool that reflects the heart, message, and mission of YouThopia.
+- Daily Verse of the Day delivery at 6:00 AM Africa/Lagos
+- Category-based scripture commands for:
+  - `faith`
+  - `love`
+  - `peace`
+  - `joy`
+  - `hope`
+  - `patience`
+  - `forgiveness`
+- Automatic Bible reference detection in chat messages
+- Translation support for `KJV`, `WEB`, `BBE`, and `ASV`
+- Group and DM subscription support
+- Telegram-friendly scripture formatting with quote-style and expandable verse output
+- Keep-alive HTTP endpoint for deployment environments that expect a bound port
 
----
+## Current Feature Set
 
-## About YouThopia Bible Commununity
+Theo currently supports:
 
-YOUTHOPIA BIBLE COMMUNITY is a faith-driven digital community focused on:
+- `/start` onboarding flow with today's Verse of the Day
+- `/verse` category browsing and direct category lookup
+- Dedicated category commands such as `/hope` and `/peace`
+- `/enable_votd`, `/disable_votd`, and `/status`
+- `/translation` for changing Bible versions per chat
+- Automatic detection of references like `John 3:16` or `Psalm 23:1-6`
+- Daily scheduled VOTD delivery to subscribed chats
 
-* Spiritual growth
-* Personal development
-* Purpose discovery
-* Building meaningful Christian relationships
+## Example Output
 
-Theo exists to support this mission digitally.
+```text
+John 14:27 (KJV)
 
-“Sharing God’s Love All The Way.”
+<blockquote>Peace I leave with you, my peace I give unto you...</blockquote>
+```
 
-
-## What Theo Currently Does
-
-At its current stage, Theo focuses on a few core capabilities:
-
-### 1. Conversational Spiritual Support
-
-Theo responds to users in a natural, conversational way.
-
-* Encourages users spiritually
-* Shares thoughts based on Christian principles
-* Acts as a companion for everyday conversations
-
-
-### 2. Scripture Support (Basic)
-
-Theo can provide Bible verses when needed.
-
-* Responds with relevant scriptures
-* Helps users reflect on God’s word
-
-
-### 3. Simple Personalization
-
-Theo may use basic information like a user’s name (from Telegram) to make conversations feel more personal.
-
-
-
-## What Theo is NOT (Yet)
-
-To keep expectations clear:
-
-* No advanced memory system yet
-* No deep emotional tracking yet
-* No structured reflection system yet
-* No full community integration features yet
-
-Theo is still in its early stage and is being built step by step.
-
-
-
-## Vision
-
-To build a deeply personal and intelligent spiritual companion that helps every YouTopian grow in faith, discipline, and purpose.
-
-
-## Future Goals (Planned Features)
-
-Theo is designed to evolve over time. Planned improvements include:
-
-* Personalized memory system
-* Verse of the Day (VOTD)
-* Context-aware scripture recommendations
-* Daily reflection and journaling system
-* Deeper emotional understanding
-* Community engagement features
-* Multi-bot ecosystem integration (Theo, Pete, etc.)
-
-
-
-## System Architecture (Simple View)
-
-Theo is built with a modular structure:
-
-* Interface Layer → Telegram bot interaction
-* Logic Layer → Handles conversation and responses
-* AI Layer → Processes input and generates replies
-* Data Layer → Stores basic data (if needed)
-
-
+On Telegram, scripture is rendered as a native quote block. Longer or multi-line passages are sent as expandable quote blocks to keep chats clean.
 
 ## Tech Stack
 
-* Python
-* Telegram Bot API
-* OpenAI API (for AI responses)
-* SQLite (basic storage, optional)
-
+- Python
+- `pyTelegramBotAPI`
+- `requests`
+- `pymongo`
+- `APScheduler`
+- `Flask`
+- `python-dotenv`
 
 ## Project Structure
 
+```text
 theo/
-│
-├── app/
-├── bot/
-├── core/
-├── data/
-├── services/
-├── utils/
-└── README.md
+|-- adapters/      # Telegram handlers, views, and bot wiring
+|-- app/           # Startup, config, container, logging, keep-alive
+|-- core/          # Business logic and services
+|-- data/          # Static verse configuration
+|-- infra/         # MongoDB, scheduler, and cache implementations
+`-- tests/         # Test suite
+```
 
+## Configuration
 
-## Development Approach
+Theo reads configuration from a local `.env` file.
 
-Theo is being built iteratively:
+Required variables:
 
-* Start simple
-* Test in real conversations
-* Improve based on real user needs
-* Gradually add intelligence and structure
+- `BOT_TOKEN` - Telegram bot token from BotFather
+- `MONGO_URI` - MongoDB connection string
 
+Optional variables:
 
+- `MONGO_DB_NAME` - Database name, defaults to `theo`
+- `PORT` - Used by the keep-alive HTTP server, defaults to `8080`
 
-## Contribution Guidelines
+Minimal `.env` example:
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+```env
+BOT_TOKEN=your-telegram-bot-token
+MONGO_URI=your-mongodb-uri
+MONGO_DB_NAME=theo
+PORT=8080
+```
 
+## Local Setup
 
+1. Clone the repository.
+2. Create and activate a virtual environment.
+3. Install dependencies.
+4. Create a `.env` file with your bot token and MongoDB URI.
+5. Run the bot.
 
-## Philosophy Behind Theo
+```powershell
+pip install -r requirements.txt
+python -m theo.app.main
+```
 
-Theo is built on the belief that technology should support spiritual growth, not replace it.
+## Telegram Commands
 
-It is designed to:
+Core commands:
 
-* Guide users toward God
-* Support the YouThopia community
-* Encourage consistency in faith
+- `/start`
+- `/help`
+- `/verse`
+- `/status`
+- `/enable_votd`
+- `/disable_votd`
+- `/translation`
 
+Category commands:
 
+- `/faith`
+- `/love`
+- `/peace`
+- `/joy`
+- `/hope`
+- `/patience`
+- `/forgiveness`
 
-## Final Note
+## How It Works
 
-Theo is still growing.
+Theo is structured with clear separation of concerns:
 
-It is a simple beginning of something bigger — a digital companion for every YouTopian.
+- `app/` boots the application and wires dependencies together
+- `adapters/telegram/` handles Telegram-specific input and output
+- `core/services/` contains scripture lookup, scheduling, translation, and detection logic
+- `infra/` manages MongoDB persistence, caching, and the scheduler
+- `data/verses.json` is the source of truth for categories and the VOTD category
 
-Sharing God’s Love All The Way.
+The bot fetches live verse text from the Bible API rather than storing full verse text locally.
+
+## Deployment Notes
+
+Theo can run on platforms like Render. The built-in keep-alive server binds to `0.0.0.0:$PORT`, which helps when deploying to environments that expect an HTTP service.
+
+Start command:
+
+```text
+python -m theo.app.main
+```
+
+## Roadmap
+
+Planned improvements include:
+
+- AI-generated reflections
+- Prayer-oriented flows
+- Deeper personalization
+- Reading plans
+- Saved verses and prayer requests
+- Broader production hardening and validation
+
+## Contributing
+
+Contributions are welcome. If you want to improve Theo:
+
+1. Create a feature branch
+2. Make focused changes
+3. Test your work
+4. Open a pull request with a clear summary
+
+## Project Direction
+
+Theo is meant to feel intentional, spiritually grounded, and useful in real conversations. The goal is not just to return Bible text, but to create a dependable scripture companion for the YouThopia community.

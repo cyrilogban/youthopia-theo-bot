@@ -117,9 +117,9 @@
 - Decide whether group translation should stay shared per chat or become more advanced later
 - Design timezone-aware delivery for global scaling
 
-## Potential Features
+## Future Features
 
-I hope to add the following features to Theo:
+Planned future features for Theo:
 
 - **AI Reflection**
   Add a short human reflection after each verse that feels grounded, specific, and not generic.
@@ -139,7 +139,7 @@ I hope to add the following features to Theo:
   - `Confused`
   Then match the user to scripture more personally.
 
-- **Saved Preferences**
+- **Deeper Personalization**
   Expand personalization beyond translation to include:
   - preferred delivery time
   - quiet hours
@@ -192,11 +192,11 @@ I hope to add the following features to Theo:
 
 ## Suggested Priority
 
-1. AI reflection only
-2. Mood / need check-in flow
-3. Prayer mode
-4. Favorites / saved verses
-5. Reading plans
+1. AI reflections
+2. Prayer mode
+3. Favorites / saved verses
+4. Reading plans
+5. Mood / need check-in flow
 
 ## Bugs / Watchlist
 - Need live verification after major wiring because terminal-based automated checks have been limited
