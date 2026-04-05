@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from html import escape
-import json
-from pathlib import Path
 import random
 from typing import Any
 from urllib.parse import quote
@@ -14,13 +12,18 @@ from theo.core.services.translation_service import (
     get_translation_label,
     get_translation_or_default,
 )
+from theo.infra.supabase_verse_repo import (
+    get_all_categories,
+    get_votd_category as supabase_get_votd_category,
+    get_verses_by_category,
+)
 
 
 VERSE_API_URL = "https://bible-api.com/"
 REQUEST_TIMEOUT_SECONDS = 15
 REQUEST_RETRY_ATTEMPTS = 3
-VERSE_CONFIG_PATH = Path(__file__).resolve().parents[2] / "data" / "verses.json"
 EXPANDABLE_QUOTE_MIN_CHARS = 220
+
 
 class VerseServiceError(RuntimeError):
     """Raised when the verse service cannot complete a request."""
@@ -53,39 +56,17 @@ class VerseResponse:
     translation: str
 
 
-
-def load_verse_config() -> dict[str, Any]:
-    with VERSE_CONFIG_PATH.open("r", encoding="utf-8") as file:
-        data = json.load(file)
-
-    categories = data.get("categories")
-    if not isinstance(categories, dict) or not categories:
-        raise VerseServiceError("Verse config is missing categories.")
-
-    return data
-
-
-
 def list_categories() -> tuple[str, ...]:
-    config = load_verse_config()
-    categories = tuple(config["categories"].keys())
+    categories = get_all_categories()
 
     if any(category != category.lower() for category in categories):
-        raise VerseServiceError("All category names in config must be lowercase.")
+        raise VerseServiceError("All category names must be lowercase.")
 
-    return categories
-
+    return tuple(categories)
 
 
 def get_votd_category() -> str:
-    config = load_verse_config()
-    category = str(config.get("votd", {}).get("category", "")).strip().lower()
-
-    if category not in config["categories"]:
-        raise VerseServiceError("Configured VOTD category does not exist in categories.")
-
-    return category
-
+    return supabase_get_votd_category()
 
 
 def get_scripture_by_category(
@@ -95,8 +76,8 @@ def get_scripture_by_category(
 ) -> VerseResponse:
     normalized_category = category.strip().lower()
     normalized_translation = get_translation_or_default(translation)
-    config = load_verse_config()
-    candidates = config["categories"].get(normalized_category)
+
+    candidates = get_verses_by_category(normalized_category)
 
     if not candidates:
         raise UnknownCategoryError(f"Unknown category: {category}")
@@ -130,7 +111,6 @@ def get_scripture_by_category(
         ) from last_error
 
     raise VerseLookupError(f"No verse references were available for '{normalized_category}'.")
-
 
 
 def fetch_scripture_text_by_reference(
@@ -170,7 +150,6 @@ def fetch_scripture_text_by_reference(
     ) from last_error
 
 
-
 def fetch_verse(
     category: str | None = None,
     exclude_reference: str | None = None,
@@ -183,7 +162,6 @@ def fetch_verse(
         translation=translation,
     )
     return format_verse_message(verse_response)
-
 
 
 def format_reference_message(
@@ -207,14 +185,12 @@ def format_reference_message(
     )
 
 
-
 def format_verse_message(verse_response: VerseResponse) -> str:
     return format_reference_message(
         verse_response.reference.reference,
         verse_response.text,
         translation=verse_response.translation,
     )
-
 
 
 def _parse_reference(item: dict[str, Any]) -> VerseReference:
@@ -225,13 +201,11 @@ def _parse_reference(item: dict[str, Any]) -> VerseReference:
     )
 
 
-
 def _fetch_verse_text(
     reference: VerseReference,
     translation: str | None = None,
 ) -> str:
     return fetch_scripture_text_by_reference(reference.reference, translation=translation)
-
 
 
 def _should_use_expandable_quote(verse_text: str) -> bool:
@@ -259,4 +233,3 @@ def _format_api_verses(verses: list[dict[str, Any]]) -> str:
         raise VerseLookupError("Empty multi-verse payload returned from API.")
 
     return "\n".join(formatted_lines)
-

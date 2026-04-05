@@ -3,7 +3,7 @@ import logging
 import time
 
 """
-ARCHITECTURE NOTE â€“ Why I used this approach
+ARCHITECTURE NOTE Why I used this approach
 
 There are two ways I could have written this scheduler logic.
 
