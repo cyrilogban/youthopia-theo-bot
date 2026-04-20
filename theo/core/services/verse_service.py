@@ -155,9 +155,30 @@ def fetch_verse(
     exclude_reference: str | None = None,
     translation: str | None = None,
 ) -> str:
-    target_category = category or get_votd_category()
+    from theo.infra.supabase_verse_repo import get_votd_verse
+
+    if category is None:
+        votd = get_votd_verse()
+        if not votd:
+            raise VerseLookupError("Could not get VOTD verse.")
+        reference = VerseReference(
+            book=votd["book"],
+            chapter=votd["chapter"],
+            verse=votd["verse"],
+        )
+        target_category = get_votd_category()
+        normalized_translation = get_translation_or_default(translation)
+        verse_text = _fetch_verse_text(reference, translation=normalized_translation)
+        verse_response = VerseResponse(
+            category=target_category,
+            reference=reference,
+            text=verse_text,
+            translation=normalized_translation,
+        )
+        return format_verse_message(verse_response)
+
     verse_response = get_scripture_by_category(
-        target_category,
+        category,
         exclude_reference=exclude_reference,
         translation=translation,
     )
