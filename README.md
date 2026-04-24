@@ -47,9 +47,11 @@ On Telegram, scripture is rendered as a native quote block. Longer or multi-line
 - `pyTelegramBotAPI`
 - `requests`
 - `pymongo`
+- `supabase`
 - `APScheduler`
 - `Flask`
 - `python-dotenv`
+- `certifi`
 
 ## Project Structure
 
@@ -71,6 +73,8 @@ Required variables:
 
 - `BOT_TOKEN` - Telegram bot token from BotFather
 - `MONGO_URI` - MongoDB connection string
+- `SUPABASE_URL` - Supabase project URL for verse/category data
+- `SUPABASE_KEY` - Supabase API key for verse/category access
 
 Optional variables:
 
@@ -82,6 +86,8 @@ Minimal `.env` example:
 ```env
 BOT_TOKEN=your-telegram-bot-token
 MONGO_URI=your-mongodb-uri
+SUPABASE_URL=your-supabase-url
+SUPABASE_KEY=your-supabase-key
 MONGO_DB_NAME=theo
 PORT=8080
 ```
@@ -129,9 +135,19 @@ Theo is structured with clear separation of concerns:
 - `adapters/telegram/` handles Telegram-specific input and output
 - `core/services/` contains scripture lookup, scheduling, translation, and detection logic
 - `infra/` manages MongoDB persistence, caching, and the scheduler
-- `data/verses.json` is the source of truth for categories and the VOTD category
+- Supabase tables (`categories`, `verses`, and `votd_log`) are the source of truth for scripture categories, references, and daily VOTD rotation
 
 The bot fetches live verse text from the Bible API rather than storing full verse text locally.
+
+VOTD category is selected by weekday mapping:
+
+- Monday: `faith`
+- Tuesday: `love`
+- Wednesday: `peace`
+- Thursday: `joy`
+- Friday: `hope`
+- Saturday: `patience`
+- Sunday: `forgiveness`
 
 ## Deployment Notes
 

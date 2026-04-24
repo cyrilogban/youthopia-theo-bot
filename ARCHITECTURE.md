@@ -1,71 +1,173 @@
-# Architecture 
+# Architecture
 
 ## Current Design
 
-Theo uses a simple layered structure:
+Theo uses a layered architecture with clear separation of concerns:
 
-- **Container** → handles infrastructure (settings + database)
-- **Services** → business logic (scheduler, verse logic)
-- **Adapters** → Telegram bot (TeleBot)
-- **Main** → wiring everything together
+- **App Layer (`theo/app`)** -> startup, config loading, logging, dependency wiring
+- **Adapter Layer (`theo/adapters`)** -> Telegram handlers, routing, and response rendering
+- **Core Layer (`theo/core`)** -> business logic (verse retrieval, scheduling flow, category/reference detection, translations)
+- **Infrastructure Layer (`theo/infra`)** -> persistence (MongoDB), scheduler (APScheduler), cache, and Supabase verse repository
+- **Main Entrypoint (`theo/app/main.py`)** -> composes all layers and starts polling
 
 ---
 
-## Option A vs Option B (Important Decision)
+## Container Decision (Important)
 
-There are two ways I could structure the bot.
+There are two ways to structure runtime dependencies.
 
 ### Option B (Not used)
-- Store Telegram bot inside the Container
-- Access it with: `container.bot`
 
-Problem:
-- Container becomes tightly coupled to TeleBot
-- Harder to change Telegram library later
+- Store Telegram bot instance inside the container
+- Access as `container.bot`
+
+Problems:
+
+- Couples container to Telegram implementation
+- Makes adapter changes harder if Telegram library changes
 
 ---
 
 ### Option A (Chosen)
 
-I removed the bot from the Container.
+The container stores infrastructure dependencies only.
 
-- `container.py` → only settings + database
-- `main.py` → creates the bot
-- `schedule_service.py` → receives bot as argument
+- `container.py` -> settings + `group_repo`
+- `main.py` -> creates `TeleBot`
+- `schedule_service.py` -> accepts both `container` and `bot`
 
 Example:
 
 ```python
 start_scheduler(lambda: daily_job(container, bot))
+```
 
-## Database Layer (MongoDB)
-
-Theo uses MongoDB to persist group data.
-
-### Responsibilities:
-- Store registered Telegram groups
-- Track whether daily verse is enabled or disabled
-- Store group metadata (e.g. title)
-
-### Implementation:
-- MongoDB is accessed through `MongoGroupRepo`
-- The repository follows an abstraction (`GroupRepo`) to allow flexibility
-
-### Why MongoDB:
-- Simple document-based storage
-- Easy to scale
-- Flexible schema for future features (preferences, settings)
+This keeps infrastructure independent from Telegram-specific runtime objects.
 
 ---
 
-## Data Flow
+## Persistence and Data Sources
 
-1. A group enables daily verse
-2. The group is stored in MongoDB
-3. Scheduler fetches enabled groups from MongoDB
-4. Messages are sent to those groups
+Theo uses two data stores with different responsibilities.
 
-## Future Data Design
-- store verse history per group
-- store delivery time per group
-- store preferred Bible version
+### MongoDB (chat state, subscriptions, preferences)
+
+Used via `MongoGroupRepo` behind the `GroupRepo` contract.
+
+Responsibilities:
+
+- Store chats/groups that interacted with Theo
+- Track daily VOTD enable/disable state per chat
+- Store chat metadata (title)
+- Store selected translation per chat (e.g., `kjv`, `web`, `bbe`, `asv`)
+
+Why:
+
+- Simple document storage for chat-level state
+- Clear repository abstraction for portability
+
+---
+
+### Supabase (scripture references and VOTD history)
+
+Used via `supabase_verse_repo`.
+
+Responsibilities:
+
+- Category catalog (`categories`)
+- Verse references by category (`verses`) using structured fields:
+  - `book`
+  - `chapter`
+  - `verse`
+- Daily VOTD logging and non-repetition cycle (`votd_log`)
+
+VOTD category mapping is weekday-based:
+
+- Monday -> `faith`
+- Tuesday -> `love`
+- Wednesday -> `peace`
+- Thursday -> `joy`
+- Friday -> `hope`
+- Saturday -> `patience`
+- Sunday -> `forgiveness`
+
+---
+
+## Verse Retrieval Pipeline
+
+1. Category is determined (explicit command, detected user request, or VOTD mapping)
+2. Verse reference candidates are loaded from Supabase
+3. One reference is selected (with optional exclusion to avoid immediate repeat)
+4. Verse text is fetched live from Bible API (`https://bible-api.com/`)
+5. Response is formatted for Telegram HTML quote style
+6. Translation is applied per chat preference (fallback default: `kjv`)
+
+Notes:
+
+- Verse text is not stored locally
+- Retrieval retries are applied on transient failures
+- Multi-verse references are normalized and formatted safely
+
+---
+
+## Scheduling Flow
+
+Scheduler:
+
+- APScheduler background cron
+- Runs daily at **06:00 Africa/Lagos**
+
+Job flow:
+
+1. Load all enabled chats from MongoDB
+2. Resolve the day's VOTD category
+3. Select/resolve today's shared verse reference
+4. Fetch verse text (translation-aware per chat)
+5. Deliver message to each enabled chat (DM or group context)
+
+---
+
+## Telegram Interaction Flow
+
+### Command-driven
+
+- `/start`, `/help`
+- `/verse` (+ optional category argument)
+- Dedicated category commands: `/faith`, `/love`, `/peace`, `/joy`, `/hope`, `/patience`, `/forgiveness`
+- Subscription controls: `/enable_votd`, `/disable_votd`, `/status`
+- Translation controls: `/translation`
+
+### Passive detection
+
+- Category request detection from plain text
+- Scripture reference detection in normal messages (e.g., `John 3:16`, `Psalm 23:1-6`)
+
+---
+
+## Runtime Components
+
+- `pyTelegramBotAPI` for bot runtime and handlers
+- `APScheduler` for daily VOTD cron
+- `Flask` keep-alive endpoint (`0.0.0.0:$PORT`) for hosted environments
+- `requests` for Bible API calls
+- `pymongo` + `certifi` for MongoDB persistence
+- `supabase` client for category/reference storage and VOTD logs
+
+---
+
+## Error Handling Principles
+
+- Retry external verse fetches
+- Fallback to alternate verse candidates when needed
+- Guard unknown categories gracefully
+- Never crash polling loop on handler/job errors
+- Log failures with context for operational debugging
+
+---
+
+## Design Principles
+
+- Keep adapters thin and platform-specific
+- Keep core services pure and reusable
+- Keep infrastructure replaceable behind contracts
+- Keep output intentional, structured, and consistent

@@ -1,6 +1,7 @@
-# Progress made So far.
+# Progress made So far
 
 ## Current State
+
 - Telegram bot is running with command handlers, inline actions, and daily scheduling
 - Keep-alive HTTP server is wired into startup for hosting platforms that expect a bound port
 - Daily VOTD is scheduled for 6:00 AM Africa/Lagos
@@ -26,6 +27,7 @@
 - Handler optimization: bot username cached at startup (not called per-message)
 
 ## Completed Features
+
 - Wired `verse.py` into the Telegram router
 - Added category scripture commands:
   - `/faith`
@@ -58,13 +60,14 @@
   - auto-detected scripture replies
   - daily VOTD delivery
 - Wired keep-alive startup into `main.py`
-- Verse output now shows translation labels like `(KJV)` 
-- Verse output now renders as Telegram blockquotes instead of plain quoted text 
-- Added expandable scripture formatting for long and multi-verse output 
+- Verse output now shows translation labels like `(KJV)`
+- Verse output now renders as Telegram blockquotes instead of plain quoted text
+- Added expandable scripture formatting for long and multi-verse output
 - Kept global bot parse mode unchanged and applied HTML only to scripture sends/edits
 - Daily VOTD now includes a personalized greeting before the verse
 
 ## Recently Completed (Session 2)
+
 - **Enhanced Welcome Flow**: `/start` command now delivers today's VOTD with category buttons
 - **First-Time User Tracking**: Implemented in-memory cache (`FirstTimeUserCache`) with TTL tracking
 - **Group Join Welcome**: Bot sends welcome message with VOTD when added to groups
@@ -75,7 +78,8 @@
 - **Security Audit**: Identified and documented 10 security vulnerabilities (saved to SECURITY_AUDIT.md)
 
 ## Storage / Data Progress
-- `verses.json` is the source of truth for category scripture and VOTD category
+
+- Categories and verse references now come from Supabase tables (`categories`, `verses`, `votd_log`)
 - Chat records now store:
   - `chat_id`
   - `title`
@@ -84,6 +88,7 @@
 - Old records safely fall back to `kjv`
 
 ## Testing Progress
+
 - Existing tests still cover category detection and verse service basics
 - Added parser test file:
   - `test_reference_detection_service.py`
@@ -95,6 +100,7 @@
 - Live Telegram testing is still important for validation
 
 ## Current Commands
+
 - `/verse` - Browse scripture
 - `/translation` - Change translation
 - `/enable_votd` - Subscribe to daily verses
@@ -102,6 +108,7 @@
 - `/status` - Check subscription status
 
 ## Current Limitations
+
 - AI reflection feature is not implemented yet
 - Mindset prompt has been intentionally dropped for now
 - Translation preference now exists and is wired into live delivery, but broader live validation is still needed
@@ -111,6 +118,7 @@
 - Security vulnerabilities identified (see SECURITY_AUDIT.md for details)
 
 ## Next Steps
+
 - Implement AI reflection generation only
 - Add translation-aware tests
 - Live-verify Telegram quote and expandable scripture rendering
@@ -199,6 +207,7 @@ Planned future features for Theo:
 5. Mood / need check-in flow
 
 ## Bugs / Watchlist
+
 - Need live verification after major wiring because terminal-based automated checks have been limited
 - Monitor group privacy settings for auto-detect behavior in groups
 - All welcome flows should be tested after handler optimization:
@@ -207,4 +216,3 @@ Planned future features for Theo:
   - Group join
   - Group mention (@botname)
 - Security vulnerabilities from audit should be addressed before production deployment
-
