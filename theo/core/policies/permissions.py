@@ -5,10 +5,20 @@ from telebot.types import Message
 def is_chat_admin(bot: TeleBot, message: Message) -> bool:
     """
     Returns True if the message sender is an admin/creator of the chat.
-    Works for groups/supergroups.
+    Works for groups, supergroups, and channel discussion groups.
     """
-    chat_id = message.chat.id
-    user_id = message.from_user.id
+    try:
+        chat_id = message.chat.id
+        user = message.from_user
 
-    member = bot.get_chat_member(chat_id, user_id)
-    return member.status in ("administrator", "creator")
+        # In channel discussion groups from_user can be None
+        if user is None:
+            return False
+
+        user_id = user.id
+
+        member = bot.get_chat_member(chat_id, user_id)
+        return member.status in ("administrator", "creator")
+    except Exception:
+        # If we cannot determine admin status, deny by default
+        return False
