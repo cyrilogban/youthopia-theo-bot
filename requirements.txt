@@ -1,0 +1,9 @@
+pyTelegramBotAPI
+python-dotenv
+Flask
+pymongo
+certifi
+APScheduler
+requests
+pytest
+supabase==2.10.0
