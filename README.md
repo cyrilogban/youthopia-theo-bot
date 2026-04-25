@@ -1,5 +1,5 @@
-Spider-Man🕷️
-# Telegram Bot Boilerplate
+
+# Spider-man-telegram-bot-boilerplate
 
 A clean, reusable starter template for building Telegram bots with Python.
 
