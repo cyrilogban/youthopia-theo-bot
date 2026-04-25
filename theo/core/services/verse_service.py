@@ -201,8 +201,8 @@ def format_reference_message(
         else "blockquote"
     )
     return (
-        f"\U0001F4D6 {escaped_reference} ({translation_label})\n\n"
-        f"<{quote_tag}>{escaped_body}</blockquote>"
+        f"{escaped_reference} ({translation_label})\n\n"
+        f"<{quote_tag}>{escaped_body}</{quote_tag}>"
     )
 
 

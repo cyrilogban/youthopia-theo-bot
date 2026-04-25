@@ -5,6 +5,7 @@ import logging
 import telebot
 
 from theo.app.container import Container
+from theo.adapters.telegram.views.keyboards import build_verse_actions_keyboard
 from theo.core.services.reference_detection_service import (
     DetectedReference,
     find_scripture_references,
@@ -21,7 +22,6 @@ from theo.core.services.verse_service import (
 logger = logging.getLogger(__name__)
 
 
-
 def register_autodetect(bot: telebot.TeleBot, container: Container) -> None:
     repo = container.group_repo
 
@@ -33,24 +33,6 @@ def register_autodetect(bot: telebot.TeleBot, container: Container) -> None:
         if not record:
             return get_translation_or_default(None)
         return get_translation_or_default(record.translation)
-
-    def _format_detected_scriptures(
-        references: tuple[DetectedReference, ...],
-        verse_texts: list[str],
-        translation: str,
-    ) -> str:
-        sections: list[str] = []
-
-        for reference, verse_text in zip(references, verse_texts):
-            sections.append(
-                format_reference_message(
-                    reference.reference,
-                    verse_text,
-                    translation=translation,
-                )
-            )
-
-        return "\n\n".join(sections)
 
     def _reply_with_detected_scriptures(message: telebot.types.Message) -> None:
         text = getattr(message, "text", "") or ""
@@ -91,17 +73,45 @@ def register_autodetect(bot: telebot.TeleBot, container: Container) -> None:
             )
             return
 
-        reply_text = _format_detected_scriptures(
-            tuple(successful_references),
-            verse_texts,
-            translation,
-        )
+        # For single reference attach buttons
+        if len(successful_references) == 1:
+            reference = successful_references[0]
+            verse_text = verse_texts[0]
+            reply_text = format_reference_message(
+                reference.reference,
+                verse_text,
+                translation=translation,
+            )
+
+            if failed_references:
+                reply_text += f"\n\nI couldn't fetch these references right now: {', '.join(failed_references)}"
+
+            bot.reply_to(
+                message,
+                reply_text,
+                reply_markup=build_verse_actions_keyboard(
+                    "general",
+                    reference.reference,
+                ),
+                parse_mode="HTML",
+            )
+            return
+
+        # For multiple references send all together without buttons
+        sections: list[str] = []
+        for reference, verse_text in zip(successful_references, verse_texts):
+            sections.append(
+                format_reference_message(
+                    reference.reference,
+                    verse_text,
+                    translation=translation,
+                )
+            )
+
+        reply_text = "\n\n".join(sections)
 
         if failed_references:
-            reply_text = (
-                f"{reply_text}\n\n"
-                f"I couldn't fetch these references right now: {', '.join(failed_references)}"
-            )
+            reply_text += f"\n\nI couldn't fetch these references right now: {', '.join(failed_references)}"
 
         bot.reply_to(message, reply_text, parse_mode="HTML")
 
@@ -113,4 +123,3 @@ def register_autodetect(bot: telebot.TeleBot, container: Container) -> None:
     )
     def _autodetect(message: telebot.types.Message) -> None:
         _reply_with_detected_scriptures(message)
-

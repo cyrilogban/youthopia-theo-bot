@@ -5,7 +5,7 @@ Theo is a Telegram Bible bot built for the YouThopia Bible Community. It deliver
 ## Highlights
 
 - Daily Verse of the Day delivery at 6:00 AM Africa/Lagos
-- Category-based scripture commands for:
+ - Category-based scripture commands for:
   - `faith`
   - `love`
   - `peace`

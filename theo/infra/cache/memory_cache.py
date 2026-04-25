@@ -1,3 +1,6 @@
+# NOTE: This file is no longer used in production.
+# Replaced by Supabase user registration in supabase_user_repo.py
+# Kept for documentation and reference purposes only.
 """Simple in-memory cache for tracking first-time users."""
 
 from typing import Set
