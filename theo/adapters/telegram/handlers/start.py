@@ -90,12 +90,19 @@ def _send_welcome_with_votd(
             parse_mode="HTML",
         )
 
+        from theo.adapters.telegram.views.keyboards import build_main_menu_keyboard
+        
         cta_text = (
             "*Want verses every morning?*\n"
             "Use /enable_votd to get daily inspiration at 6 AM\n\n"
             "Need help? Use /help"
         )
-        bot.send_message(message.chat.id, cta_text, parse_mode="Markdown")
+        bot.send_message(
+            message.chat.id,
+            cta_text,
+            reply_markup=build_main_menu_keyboard(),
+            parse_mode="Markdown"
+        )
 
     except Exception:
         logger.exception("Failed to send welcome with VOTD")
@@ -107,11 +114,15 @@ def _send_simple_welcome(
     message: telebot.types.Message,
     first_name: str
 ) -> None:
-    """Send welcome message for returning users."""
+    from theo.adapters.telegram.views.keyboards import build_main_menu_keyboard
     text = (
         f"Welcome back, {first_name}! 👋\n\n"
         f"I'm Theo, your scripture companion built for the YOUTHOPIA Bible Community.\n\n"
         f"Every morning at 6 AM you'll get a verse to start your day grounded in God's word.\n\n"
         f"Use /enable_votd to subscribe or /help for more options."
     )
-    bot.send_message(message.chat.id, text)
+    bot.send_message(
+        message.chat.id,
+        text,
+        reply_markup=build_main_menu_keyboard()
+    )
