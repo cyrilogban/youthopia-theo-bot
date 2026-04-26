@@ -16,9 +16,9 @@ from theo.core.services.verse_service import (
     get_scripture_by_category,
     get_votd_category,
 )
+from theo.adapters.telegram.views.keyboards import build_verse_actions_keyboard
 
 logger = logging.getLogger(__name__)
-
 
 
 def _render_daily_intro(chat_title: str | None, first_name: str | None, is_private: bool) -> str:
@@ -29,7 +29,6 @@ def _render_daily_intro(chat_title: str | None, first_name: str | None, is_priva
         return f"Good morning, {chat_title}. Here is your verse for today:"
 
     return "Good morning. Here is your verse for today:"
-
 
 
 def daily_job(container: Container, bot: TeleBot) -> None:
@@ -43,6 +42,12 @@ def daily_job(container: Container, bot: TeleBot) -> None:
         return
 
     try:
+        from theo.infra.supabase_verse_repo import get_votd_verse
+        votd = get_votd_verse()
+        if not votd:
+            logger.error("Could not get VOTD verse from votd_log.")
+            return
+
         base_translation = get_default_translation()
         base_verse = get_scripture_by_category(
             get_votd_category(),
@@ -53,6 +58,7 @@ def daily_job(container: Container, bot: TeleBot) -> None:
         return
 
     reference = base_verse.reference.reference
+    category = base_verse.category
 
     for g in groups:
         try:
@@ -84,8 +90,11 @@ def daily_job(container: Container, bot: TeleBot) -> None:
             bot.send_message(
                 g.chat_id,
                 f"{escape(intro)}\n\n{verse_message}",
+                reply_markup=build_verse_actions_keyboard(
+                    category,
+                    reference,
+                ),
                 parse_mode="HTML",
             )
         except Exception:
             logger.exception(f"Failed to send daily VOTD message to {g.chat_id}")
-
