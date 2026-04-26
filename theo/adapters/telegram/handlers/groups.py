@@ -12,7 +12,6 @@ from theo.core.services.translation_service import (
 )
 
 
-
 def register_groups(bot: TeleBot, container: Container) -> None:
     repo = container.group_repo
 
@@ -214,6 +213,10 @@ def register_groups(bot: TeleBot, container: Container) -> None:
                 translation=translation_code,
             )
         )
+
+        if is_private and message.from_user:
+            from theo.infra.supabase_user_repo import update_user_translation
+            update_user_translation(message.from_user.id, translation_code)
 
         if is_private:
             bot.reply_to(

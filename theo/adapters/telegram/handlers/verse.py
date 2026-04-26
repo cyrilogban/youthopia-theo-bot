@@ -37,7 +37,6 @@ def register_verse(bot: telebot.TeleBot, container: Container) -> None:
         return get_translation_or_default(record.translation)
 
     def _resolve_category(category: str) -> str:
-        """If category is general use today's day-based category."""
         if category == "general":
             from theo.infra.supabase_verse_repo import get_votd_category as get_day_category
             return get_day_category()
@@ -130,11 +129,47 @@ def register_verse(bot: telebot.TeleBot, container: Container) -> None:
             return
 
         if action == "save" and len(payload) == 2:
-            bot.answer_callback_query(
-                call.id,
-                "💾 Save Verse feature coming soon!",
-                show_alert=True,
-            )
+            category = payload[0]
+            reference = payload[1]
+
+            try:
+                parts = reference.split(" ")
+                book = " ".join(parts[:-1])
+                chapter_verse = parts[-1].split(":")
+                chapter = int(chapter_verse[0])
+                verse = int(chapter_verse[1])
+
+                from theo.infra.supabase_user_repo import save_verse
+                telegram_id = call.from_user.id
+
+                saved = save_verse(
+                    telegram_id=telegram_id,
+                    book=book,
+                    chapter=chapter,
+                    verse=verse,
+                    category=category,
+                )
+
+                if saved:
+                    bot.answer_callback_query(
+                        call.id,
+                        "Verse saved successfully.",
+                        show_alert=True,
+                    )
+                else:
+                    bot.answer_callback_query(
+                        call.id,
+                        "This verse is already in your saved verses.",
+                        show_alert=True,
+                    )
+
+            except Exception:
+                logger.exception("Failed to save verse.")
+                bot.answer_callback_query(
+                    call.id,
+                    "Could not save verse right now. Please try again.",
+                    show_alert=True,
+                )
             return
 
         bot.answer_callback_query(call.id)

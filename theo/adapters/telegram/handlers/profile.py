@@ -39,10 +39,49 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
         content_types=["text"]
     )
     def _saved_verses_button(message: telebot.types.Message) -> None:
+        from theo.infra.supabase_user_repo import get_saved_verses
+        from theo.core.services.verse_service import fetch_scripture_text_by_reference
+        from theo.core.services.translation_service import get_translation_or_default
+
+        telegram_id = message.from_user.id
+        verses = get_saved_verses(telegram_id)
+
+        if not verses:
+            bot.send_message(
+                message.chat.id,
+                "You have no saved verses yet.\n\nTap Save on any verse to save it here."
+            )
+            return
+
+        record = container.group_repo.get_group(message.chat.id)
+        translation = get_translation_or_default(
+            record.translation if record else None
+        )
+
+        sections = []
+        for i, v in enumerate(verses, start=1):
+            book = v.get("book", "")
+            chapter = v.get("chapter", "")
+            verse = v.get("verse", "")
+            reference = f"{book} {chapter}:{verse}"
+
+            try:
+                verse_text = fetch_scripture_text_by_reference(
+                    reference,
+                    translation=translation,
+                )
+            except Exception:
+                verse_text = "Could not fetch verse text."
+
+            sections.append(
+                f"{i}. {reference} ({translation.upper()})\n{verse_text}"
+            )
+
+        saved_text = "Your Saved Verses:\n\n" + "\n\n".join(sections)
+
         bot.send_message(
             message.chat.id,
-            "*Saved Verses*\n\nThis feature is coming soon!",
-            parse_mode="Markdown"
+            saved_text,
         )
 
     @bot.message_handler(
@@ -98,11 +137,50 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
             )
 
         elif action == "saved_verses":
-            bot.answer_callback_query(
-                call.id,
-                "Saved Verses feature coming soon!",
-                show_alert=True
-            )
+            from theo.infra.supabase_user_repo import get_saved_verses
+            from theo.core.services.verse_service import fetch_scripture_text_by_reference
+            from theo.core.services.translation_service import get_translation_or_default
+
+            telegram_id = call.from_user.id
+            verses = get_saved_verses(telegram_id)
+
+            if not verses:
+                bot.answer_callback_query(
+                    call.id,
+                    "You have no saved verses yet. Tap Save on any verse to save it.",
+                    show_alert=True,
+                )
+            else:
+                record = container.group_repo.get_group(call.message.chat.id)
+                translation = get_translation_or_default(
+                    record.translation if record else None
+                )
+
+                sections = []
+                for i, v in enumerate(verses, start=1):
+                    book = v.get("book", "")
+                    chapter = v.get("chapter", "")
+                    verse = v.get("verse", "")
+                    reference = f"{book} {chapter}:{verse}"
+
+                    try:
+                        verse_text = fetch_scripture_text_by_reference(
+                            reference,
+                            translation=translation,
+                        )
+                    except Exception:
+                        verse_text = "Could not fetch verse text."
+
+                    sections.append(
+                        f"{i}. {reference} ({translation.upper()})\n{verse_text}"
+                    )
+
+                saved_text = "Your Saved Verses:\n\n" + "\n\n".join(sections)
+                bot.answer_callback_query(call.id)
+                bot.send_message(
+                    call.message.chat.id,
+                    saved_text,
+                )
 
         elif action == "verse_history":
             bot.answer_callback_query(
