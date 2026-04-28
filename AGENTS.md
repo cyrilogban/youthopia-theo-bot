@@ -1,4 +1,4 @@
- # AGENTS.md
+# AGENTS.md
 
 ## Project Overview
 
@@ -41,6 +41,7 @@ No additional categories allowed unless updated in config.
 
 The system MUST use the following configuration:
 
+```json
 {
   "votd": {
     "mode": "category",
@@ -85,6 +86,7 @@ The system MUST use the following configuration:
     ]
   }
 }
+```
 
 ---
 
@@ -106,16 +108,15 @@ The system MUST use the following configuration:
 ### Definition
 
 - VOTD is determined from config
-- Uses:
-  votd.category
+- Uses: `votd.category`
 - Same for all users per day
 
 ---
 
 ## VOTD Logic Flow
 
-1. Read votd.category
-2. Access categories[votd.category]
+1. Read `votd.category`
+2. Access `categories[votd.category]`
 3. Select one verse
 4. Fetch verse text via API
 5. Cache for the day
@@ -126,8 +127,7 @@ The system MUST use the following configuration:
 
 ## User Request Flow (Category-Based)
 
-Example:
-"I need hope scripture"
+Example: "I need hope scripture"
 
 Flow:
 
@@ -143,8 +143,7 @@ Flow:
 
 ## Category Detection Rules
 
-- Match only:
-  faith, love, peace, joy, hope, patience, forgiveness
+- Match only: faith, love, peace, joy, hope, patience, forgiveness
 - Input must be lowercase
 - If no match → return fallback response
 
@@ -162,8 +161,7 @@ Use FYIM Bible API (or equivalent)
 
 Book Chapter:Verse
 
-Example:
-Hebrews 11:1
+Example: Hebrews 11:1
 
 ---
 
@@ -263,11 +261,8 @@ Reflections should feel like:
 
 - ALWAYS use full book names
 
-Correct:
-Romans 8:28
-
-Incorrect:
-Rom 8:28
+Correct: Romans 8:28
+Incorrect: Rom 8:28
 
 ---
 

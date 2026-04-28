@@ -75,6 +75,7 @@ Used via `supabase_verse_repo`, `supabase_user_repo`.
 Responsibilities:
 
 **Scripture Metadata:**
+
 - Category catalog (`categories`)
 - Verse references by category (`verses`) using structured fields:
   - `book`
@@ -83,10 +84,12 @@ Responsibilities:
 - Daily VOTD logging and non-repetition cycle (`votd_log`)
 
 **User Persistence:**
+
 - User profiles (`users`): telegram_id, first_name, username, tone_preference, translation, created_at
 - Saved verses (`saved_verses`): user-curated favorites with user_id, book, chapter, verse, category, saved_at
 
 **Verse History Logging:**
+
 - Complete delivery log (`verse_history`): user_id, book, chapter, verse, category, delivery_path, translation, delivered_at
 - Tracks all 5 delivery paths: votd, category_command, category_text_detect, reference_auto_detect, next_button
 - Private DM only (groups excluded for privacy)

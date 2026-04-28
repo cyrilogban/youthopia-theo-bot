@@ -5,6 +5,7 @@ Theo is a Telegram Bible bot built for the YouThopia Bible Community. It deliver
 ## Key Features
 
 ### Scripture Delivery (5 Paths)
+
 - **Daily Verse of the Day (VOTD)** - 6:00 AM Africa/Lagos with personalized greetings
 - **Category Commands** - `/faith`, `/love`, `/peace`, `/joy`, `/hope`, `/patience`, `/forgiveness`
 - **Category Detection** - "I need hope" detects category automatically
@@ -12,6 +13,7 @@ Theo is a Telegram Bible bot built for the YouThopia Bible Community. It deliver
 - **Interactive Browsing** - "Next" button for category browsing
 
 ### User Profile & Preferences
+
 - **My Profile** - View user details, preferences, and membership date
 - **Saved Verses** - User-curated favorite scriptures
 - **Verse History** - Complete log of all delivered verses with context
@@ -19,6 +21,7 @@ Theo is a Telegram Bible bot built for the YouThopia Bible Community. It deliver
 - **Tone Preferences** - Upcoming personalization feature
 
 ### Technical Features
+
 - Daily VOTD rotates by weekday across 7 categories (no repeats within category until exhausted)
 - Translation-aware delivery across all 5 verse paths
 - Telegram-native quote formatting with expandable blocks for long passages
@@ -53,9 +56,10 @@ On Telegram, scripture is rendered as a native quote block. Longer or multi-line
 ## Verse History Feature
 
 Users can view their complete verse history in the Profile menu:
+
 - Displays last 20 delivered verses
 - Shows full verse text for each entry
-- Includes metadata: category, delivery path, translation used
+- Includes metadata: category, delivery_path, translation used
 - Tracks 5 delivery paths: VOTD, category_command, category_text_detect, reference_auto_detect, next_button
 - Only tracks private DM history (groups excluded for privacy)
 
@@ -109,16 +113,19 @@ theo/
 Theo reads configuration from a local `.env` file.
 
 **Required variables:**
+
 - `BOT_TOKEN` - Telegram bot token from BotFather
 - `MONGO_URI` - MongoDB connection string
 - `SUPABASE_URL` - Supabase project URL
 - `SUPABASE_KEY` - Supabase anon/public key
 
 **Optional variables:**
+
 - `MONGO_DB_NAME` - Database name (default: `theo`)
 - `PORT` - Keep-alive HTTP server port (default: `8080`)
 
 **Minimal `.env` example:**
+
 ```env
 BOT_TOKEN=your-telegram-bot-token
 MONGO_URI=your-mongodb-uri
@@ -160,15 +167,6 @@ pip install -r requirements.txt
 python -m theo.app.main
 ```
 
-## Telegram Commands
-
-- `/start` - Onboarding flow with today's Verse of the Day
-- `/help` - Help and available commands
-- `/enable_votd` - Subscribe to daily verse delivery
-- `/disable_votd` - Unsubscribe from daily verse delivery
-- `/status` - Check subscription status
-- `/translation` - View or change Bible translation
-
 ## How It Works
 
 Theo is structured with clear separation of concerns:
@@ -192,13 +190,14 @@ python -m theo.app.main
 
 ## Roadmap
 
-- Saved verses feature
-- User profile command
-- AI-generated verse reflections
-- Prayer mode
-- Reading plans
-- Semantic verse search with Pinecone
-- Mood and need-based scripture matching
+- [x] Saved verses feature
+- [x] User profile command
+- [x] Verse history tracking
+- [ ] AI-generated verse reflections
+- [ ] Prayer mode
+- [ ] Reading plans
+- [ ] Semantic verse search with Pinecone
+- [ ] Mood and need-based scripture matching
 
 ## Contributing
 
