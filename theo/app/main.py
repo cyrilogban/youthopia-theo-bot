@@ -128,7 +128,7 @@ def main() -> None:
             bot.infinity_polling(
                 timeout=60,
                 long_polling_timeout=60,
-                allowed_updates=["message", "callback_query", "my_chat_member", "chat_member"],
+                allowed_updates=["message", "callback_query", "my_chat_member", "chat_member", "inline_query"],
             )
         except Exception as e:
             logger.exception(f"Polling crashed: {e}")
