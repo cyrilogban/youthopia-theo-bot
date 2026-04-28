@@ -89,10 +89,49 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
         content_types=["text"]
     )
     def _verse_history_button(message: telebot.types.Message) -> None:
+        from theo.infra.supabase_user_repo import get_verse_history
+        from theo.core.services.verse_service import fetch_scripture_text_by_reference
+
+        telegram_id = message.from_user.id
+        verses = get_verse_history(telegram_id, limit=20)
+
+        if not verses:
+            bot.send_message(
+                message.chat.id,
+                "Your Verse History is empty.\n\nVerse History tracks all verses delivered to you by the bot."
+            )
+            return
+
+        sections = []
+        for i, v in enumerate(verses, start=1):
+            book = v.get("book", "")
+            chapter = v.get("chapter", "")
+            verse = v.get("verse", "")
+            category = v.get("category", "")
+            delivery_path = v.get("delivery_path", "")
+            translation = v.get("translation", "kjv")
+            
+            reference = f"{book} {chapter}:{verse}"
+            
+            try:
+                verse_text = fetch_scripture_text_by_reference(
+                    reference,
+                    translation=translation,
+                )
+            except Exception:
+                verse_text = "Could not fetch verse text."
+            
+            meta = f"[{category}] via {delivery_path} ({translation.upper()})"
+            
+            sections.append(
+                f"{i}. {reference}\n{verse_text}\n{meta}"
+            )
+
+        history_text = "Your Verse History (Last 20):\n\n" + "\n\n".join(sections)
+
         bot.send_message(
             message.chat.id,
-            "*Verse History*\n\nThis feature is coming soon!",
-            parse_mode="Markdown"
+            history_text,
         )
 
     @bot.message_handler(
@@ -183,11 +222,50 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
                 )
 
         elif action == "verse_history":
-            bot.answer_callback_query(
-                call.id,
-                "Verse History feature coming soon!",
-                show_alert=True
-            )
+            from theo.infra.supabase_user_repo import get_verse_history
+            from theo.core.services.verse_service import fetch_scripture_text_by_reference
+
+            telegram_id = call.from_user.id
+            verses = get_verse_history(telegram_id, limit=20)
+
+            if not verses:
+                bot.answer_callback_query(
+                    call.id,
+                    "Your Verse History is empty. Verses will appear here as they are delivered to you.",
+                    show_alert=True,
+                )
+            else:
+                sections = []
+                for i, v in enumerate(verses, start=1):
+                    book = v.get("book", "")
+                    chapter = v.get("chapter", "")
+                    verse = v.get("verse", "")
+                    category = v.get("category", "")
+                    delivery_path = v.get("delivery_path", "")
+                    translation = v.get("translation", "kjv")
+                    
+                    reference = f"{book} {chapter}:{verse}"
+                    
+                    try:
+                        verse_text = fetch_scripture_text_by_reference(
+                            reference,
+                            translation=translation,
+                        )
+                    except Exception:
+                        verse_text = "Could not fetch verse text."
+                    
+                    meta = f"[{category}] via {delivery_path} ({translation.upper()})"
+                    
+                    sections.append(
+                        f"{i}. {reference}\n{verse_text}\n{meta}"
+                    )
+
+                history_text = "Your Verse History (Last 20):\n\n" + "\n\n".join(sections)
+                bot.answer_callback_query(call.id)
+                bot.send_message(
+                    call.message.chat.id,
+                    history_text,
+                )
 
         else:
             bot.answer_callback_query(call.id)

@@ -17,6 +17,7 @@ from theo.core.services.verse_service import (
     get_votd_category,
 )
 from theo.adapters.telegram.views.keyboards import build_verse_actions_keyboard
+from theo.infra.supabase_user_repo import log_verse_to_history
 
 logger = logging.getLogger(__name__)
 
@@ -96,5 +97,18 @@ def daily_job(container: Container, bot: TeleBot) -> None:
                 ),
                 parse_mode="HTML",
             )
+
+            # Log to verse history for private chats only
+            if is_private:
+                log_verse_to_history(
+                    telegram_id=g.chat_id,
+                    book=base_verse.reference.book,
+                    chapter=base_verse.reference.chapter,
+                    verse=base_verse.reference.verse,
+                    category=category,
+                    delivery_path="votd",
+                    translation=translation,
+                )
+
         except Exception:
             logger.exception(f"Failed to send daily VOTD message to {g.chat_id}")

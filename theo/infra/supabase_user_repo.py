@@ -133,3 +133,55 @@ def update_user_translation(telegram_id: int, translation: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def log_verse_to_history(
+    telegram_id: int,
+    book: str,
+    chapter: int,
+    verse: int,
+    category: str,
+    delivery_path: str,
+    translation: str = "kjv",
+) -> bool:
+    """Log a verse delivery to user's verse history. Returns True if logged successfully."""
+    try:
+        user = get_user(telegram_id)
+        if not user:
+            return False
+
+        user_id = user["id"]
+
+        supabase.table("verse_history").insert({
+            "user_id": user_id,
+            "book": book,
+            "chapter": chapter,
+            "verse": verse,
+            "category": category,
+            "delivery_path": delivery_path,
+            "translation": translation,
+        }).execute()
+
+        return True
+
+    except Exception:
+        return False
+
+
+def get_verse_history(telegram_id: int, limit: int = 50) -> list:
+    """Get verse history for a user, limited to most recent verses."""
+    try:
+        user = get_user(telegram_id)
+        if not user:
+            return []
+
+        user_id = user["id"]
+
+        result = supabase.table("verse_history").select("*").eq(
+            "user_id", user_id
+        ).order("delivered_at", desc=True).limit(limit).execute()
+
+        return result.data or []
+
+    except Exception:
+        return []

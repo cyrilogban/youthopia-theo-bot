@@ -17,6 +17,7 @@ from theo.core.services.verse_service import (
     fetch_scripture_text_by_reference,
     format_reference_message,
 )
+from theo.infra.supabase_user_repo import log_verse_to_history
 
 
 logger = logging.getLogger(__name__)
@@ -95,6 +96,28 @@ def register_autodetect(bot: telebot.TeleBot, container: Container) -> None:
                 ),
                 parse_mode="HTML",
             )
+            
+            # Log to verse history for private chats only
+            if message.chat.type == "private":
+                try:
+                    parts = reference.reference.split(" ")
+                    book = " ".join(parts[:-1])
+                    chapter_verse = parts[-1].split(":")
+                    chapter = int(chapter_verse[0])
+                    verse = int(chapter_verse[1])
+                    
+                    log_verse_to_history(
+                        telegram_id=message.from_user.id,
+                        book=book,
+                        chapter=chapter,
+                        verse=verse,
+                        category="general",
+                        delivery_path="reference_auto_detect",
+                        translation=translation,
+                    )
+                except Exception:
+                    logger.exception("Failed to log detected reference to history.")
+            
             return
 
         # For multiple references send all together without buttons
@@ -114,6 +137,28 @@ def register_autodetect(bot: telebot.TeleBot, container: Container) -> None:
             reply_text += f"\n\nI couldn't fetch these references right now: {', '.join(failed_references)}"
 
         bot.reply_to(message, reply_text, parse_mode="HTML")
+        
+        # Log to verse history for private chats only
+        if message.chat.type == "private":
+            for reference in successful_references:
+                try:
+                    parts = reference.reference.split(" ")
+                    book = " ".join(parts[:-1])
+                    chapter_verse = parts[-1].split(":")
+                    chapter = int(chapter_verse[0])
+                    verse = int(chapter_verse[1])
+                    
+                    log_verse_to_history(
+                        telegram_id=message.from_user.id,
+                        book=book,
+                        chapter=chapter,
+                        verse=verse,
+                        category="general",
+                        delivery_path="reference_auto_detect",
+                        translation=translation,
+                    )
+                except Exception:
+                    logger.exception("Failed to log detected reference to history.")
 
     @bot.message_handler(
         content_types=["text"],

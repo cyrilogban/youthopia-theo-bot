@@ -66,16 +66,24 @@
 - Kept global bot parse mode unchanged and applied HTML only to scripture sends/edits
 - Daily VOTD now includes a personalized greeting before the verse
 
-## Recently Completed (Session 2)
+## Recently Completed (Session 3)
 
-- **Enhanced Welcome Flow**: `/start` command now delivers today's VOTD with category buttons
-- **First-Time User Tracking**: Implemented in-memory cache (`FirstTimeUserCache`) with TTL tracking
-- **Group Join Welcome**: Bot sends welcome message with VOTD when added to groups
-- **Bot Mention Detection**: Implemented dynamic username detection for group tagging (@iamtheobot)
-- **Professional Button UI**: Created compact emoji button design (3 per row, removed forgiveness category)
-- **Command Menu Setup**: Configured visible command menu in Telegram (/start, /verse, /enable_votd, /translation, /help)
-- **Handler Optimization**: Cached bot username at startup to eliminate per-message API calls
-- **Security Audit**: Identified and documented 10 security vulnerabilities (saved to SECURITY_AUDIT.md)
+- **Verse History Infrastructure**: Added Supabase table with user_id, book, chapter, verse, category, delivery_path, translation, delivered_at
+- **Verse History Logging**: Wired into all 5 verse delivery paths:
+  - VOTD delivery (schedule_service.py)
+  - Category commands (/faith, /love, etc.)
+  - Category text detection ("I need hope")
+  - Bible reference auto-detection ("John 3:16")
+  - Next button browsing (category_command callback)
+- **Verse History UI**: Implemented on Telegram profile showing:
+  - Last 20 verses with full text
+  - Category, delivery path, and translation used
+  - Both message handler and inline button support
+  - Empty state messaging
+- **Service Functions**: Added to supabase_user_repo.py:
+  - `log_verse_to_history()` - Insert verse delivery log
+  - `get_verse_history()` - Retrieve user's recent verses
+- **Profile Feature**: "Verse History" button now functional (no longer "coming soon")
 
 ## Storage / Data Progress
 
@@ -86,6 +94,25 @@
   - `enabled`
   - `translation`
 - Old records safely fall back to `kjv`
+- User profiles now stored in Supabase (`users` table) with:
+  - `telegram_id`
+  - `first_name`
+  - `username`
+  - `tone_preference` (future use)
+  - `translation`
+  - `created_at`
+- Saved verses tracked in Supabase (`saved_verses` table):
+  - `user_id`
+  - `book`
+  - `chapter`
+  - `verse`
+  - `category`
+  - `saved_at`
+- **Verse History** tracked in Supabase (`verse_history` table):
+  - All 5 delivery paths logged (votd, category_command, category_text_detect, reference_auto_detect, next_button)
+  - Per-user in DMs only (groups excluded for privacy)
+  - Fields: user_id, book, chapter, verse, category, delivery_path, translation, delivered_at
+  - Indexed for fast queries: (user_id, delivered_at DESC)
 
 ## Testing Progress
 

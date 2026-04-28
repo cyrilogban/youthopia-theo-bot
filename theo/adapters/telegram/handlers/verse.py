@@ -21,6 +21,7 @@ from theo.core.services.verse_service import (
     get_scripture_by_category,
     list_categories,
 )
+from theo.infra.supabase_user_repo import log_verse_to_history
 
 
 logger = logging.getLogger(__name__)
@@ -64,6 +65,18 @@ def register_verse(bot: telebot.TeleBot, container: Container) -> None:
                 ),
                 parse_mode="HTML",
             )
+            
+            # Log to verse history for private chats only
+            if message.chat.type == "private":
+                log_verse_to_history(
+                    telegram_id=message.from_user.id,
+                    book=verse_response.reference.book,
+                    chapter=verse_response.reference.chapter,
+                    verse=verse_response.reference.verse,
+                    category=verse_response.category,
+                    delivery_path="category_command",
+                    translation=translation,
+                )
         except (UnknownCategoryError, VerseLookupError):
             logger.exception("Failed to fetch scripture for category '%s'.", category)
             bot.reply_to(message, "Could not fetch a verse right now. Please try again.")
@@ -92,6 +105,18 @@ def register_verse(bot: telebot.TeleBot, container: Container) -> None:
                 parse_mode="HTML",
             )
             bot.answer_callback_query(call.id)
+            
+            # Log to verse history for private chats only
+            if call.message.chat.type == "private":
+                log_verse_to_history(
+                    telegram_id=call.from_user.id,
+                    book=verse_response.reference.book,
+                    chapter=verse_response.reference.chapter,
+                    verse=verse_response.reference.verse,
+                    category=verse_response.category,
+                    delivery_path="next_button",
+                    translation=translation,
+                )
         except (UnknownCategoryError, VerseLookupError):
             logger.exception("Failed to fetch scripture for category '%s'.", category)
             bot.answer_callback_query(call.id, "Could not fetch a verse. Try again.")
