@@ -13,18 +13,77 @@ from theo.core.services.verse_service import (
 )
 from theo.core.services.translation_service import get_translation_or_default
 from theo.infra.supabase_user_repo import get_or_create_user
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 logger = logging.getLogger(__name__)
 
 
+def build_community_buttons() -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup()
+    keyboard.row(
+        InlineKeyboardButton(
+            "Join YouThopia",
+            url="https://t.me/youthopiabiblecommunity"
+        ),
+        InlineKeyboardButton(
+            "Follow YouThopia",
+            url="https://t.me/youthopiabiblecommunityy"
+        ),
+    )
+    keyboard.row(
+        InlineKeyboardButton(
+            "Add Theo to Group",
+            url="https://t.me/iamtheobot?startgroup=true"
+        ),
+        InlineKeyboardButton(
+            "Start My Daily Verse",
+            callback_data="start|enable_votd"
+        ),
+    )
+    return keyboard
+
+
 def register_start(bot: telebot.TeleBot, container: Container | None = None) -> None:
+
+    @bot.callback_query_handler(
+        func=lambda call: str(getattr(call, "data", "")).startswith("start|")
+    )
+    def _start_callbacks(call: telebot.types.CallbackQuery) -> None:
+        action = call.data.split("|")[1]
+        if action == "enable_votd":
+            from theo.infra.db.repo import GroupRecord
+            if container:
+                repo = container.group_repo
+                chat_id = call.message.chat.id
+                record = repo.get_group(chat_id)
+                if record and record.enabled:
+                    bot.answer_callback_query(
+                        call.id,
+                        "You are already subscribed to daily verses.",
+                        show_alert=True
+                    )
+                else:
+                    translation = record.translation if record else "kjv"
+                    repo.upsert_group(
+                        GroupRecord(
+                            chat_id=chat_id,
+                            title=None,
+                            enabled=True,
+                            translation=translation,
+                        )
+                    )
+                    bot.answer_callback_query(
+                        call.id,
+                        "You are now subscribed to daily verses at 6 AM.",
+                        show_alert=True
+                    )
+
     @bot.message_handler(commands=["start"])
     def _start(message: telebot.types.Message) -> None:
         first_name = (message.from_user.first_name or "Friend").strip()
         username = getattr(message.from_user, "username", None)
         telegram_id = message.from_user.id
 
-        # Check Supabase if user exists or create them
         user, is_new = get_or_create_user(
             telegram_id=telegram_id,
             first_name=first_name,
@@ -69,12 +128,12 @@ def _send_welcome_with_votd(
         )
 
         welcome_text = (
-            f"🌐 Welcome to the YOUTHOPIA family, {first_name}.\n\n"
+            f"Welcome to the YOUTHOPIA family, {first_name}.\n\n"
             f"I'm Theo. I exist because this community matters.\n\n"
             f"Every morning at 6 AM, I deliver a verse to our entire family. "
             f"We all see it together. We all start our day grounded in the same truth. "
-            f"That's the power of what we're building - a digital sanctuary where nobody walks alone.\n\n"
-            f"Here's today's anchor verse:"
+            f"That's the power of what we're building - a digital community where nobody walks alone.\n\n"
+            f"Here's today's bible verse:"
         )
 
         bot.send_message(message.chat.id, welcome_text)
@@ -91,7 +150,7 @@ def _send_welcome_with_votd(
         )
 
         from theo.adapters.telegram.views.keyboards import build_main_menu_keyboard
-        
+
         cta_text = (
             "*Want verses every morning?*\n"
             "Use /enable_votd to get daily inspiration at 6 AM\n\n"
@@ -102,6 +161,12 @@ def _send_welcome_with_votd(
             cta_text,
             reply_markup=build_main_menu_keyboard(),
             parse_mode="Markdown"
+        )
+
+        bot.send_message(
+            message.chat.id,
+            "Connect with the YouThopia Bible Community:",
+            reply_markup=build_community_buttons(),
         )
 
     except Exception:
@@ -116,7 +181,7 @@ def _send_simple_welcome(
 ) -> None:
     from theo.adapters.telegram.views.keyboards import build_main_menu_keyboard
     text = (
-        f"Welcome back, {first_name}! 👋\n\n"
+        f"Welcome back, {first_name}!\n\n"
         f"I'm Theo, your scripture companion built for the YOUTHOPIA Bible Community.\n\n"
         f"Every morning at 6 AM you'll get a verse to start your day grounded in God's word.\n\n"
         f"Use /enable_votd to subscribe or /help for more options."
@@ -125,4 +190,10 @@ def _send_simple_welcome(
         message.chat.id,
         text,
         reply_markup=build_main_menu_keyboard()
+    )
+
+    bot.send_message(
+        message.chat.id,
+        "Connect with the YouThopia Bible Community:",
+        reply_markup=build_community_buttons(),
     )

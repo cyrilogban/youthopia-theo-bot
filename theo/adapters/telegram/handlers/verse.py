@@ -268,23 +268,6 @@ def register_verse(bot: telebot.TeleBot, container: Container) -> None:
         # Create the full formatted message
         full_message = format_reference_message(reference, verse_text, translation=translation)
 
-        # Create inline keyboard with Save|Next|Share buttons
-        keyboard = InlineKeyboardMarkup()
-        keyboard.row(
-            InlineKeyboardButton(
-                "Save",
-                callback_data=f"{CALLBACK_PREFIX}save|{category}|{reference}",
-            ),
-            InlineKeyboardButton(
-                "Next",
-                callback_data=f"{CALLBACK_PREFIX}another|{category}|{reference}",
-            ),
-            InlineKeyboardButton(
-                "Share",
-                callback_data=f"{CALLBACK_PREFIX}forward",
-            ),
-        )
-
         return InlineQueryResultArticle(
             id=verse_id,
             title=reference,
@@ -293,7 +276,6 @@ def register_verse(bot: telebot.TeleBot, container: Container) -> None:
                 message_text=full_message,
                 parse_mode="HTML",
             ),
-            reply_markup=keyboard,
         )
 
     def _handle_inline_query_category(
