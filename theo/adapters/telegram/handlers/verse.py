@@ -18,7 +18,6 @@ from theo.adapters.telegram.views.keyboards import (
     build_verse_actions_keyboard,
 )
 from theo.adapters.telegram.views.render import (
-    render_forward_instruction,
     render_verse_lookup_error,
 )
 from theo.app.container import Container
@@ -154,14 +153,6 @@ def register_verse(bot: telebot.TeleBot, container: Container) -> None:
                 call,
                 payload[0],
                 exclude_reference=payload[1],
-            )
-            return
-
-        if action == "forward":
-            bot.answer_callback_query(
-                call.id,
-                render_forward_instruction(),
-                show_alert=True,
             )
             return
 

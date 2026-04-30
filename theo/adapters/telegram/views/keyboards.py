@@ -21,7 +21,7 @@ def build_verse_actions_keyboard(
         ),
         InlineKeyboardButton(
             "Share",
-            callback_data=f"{INLINE_ACTION_PREFIX}|forward",
+            switch_inline_query=reference,
         ),
     )
     return keyboard
