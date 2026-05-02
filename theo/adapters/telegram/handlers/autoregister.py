@@ -15,6 +15,7 @@ from theo.core.services.verse_service import (
 )
 from theo.core.services.translation_service import get_translation_or_default
 from theo.infra.supabase_user_repo import get_or_create_user
+from theo.core.services.tone_service import get_tone_intro
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ def register_autoregister(bot: telebot.TeleBot, container: Container) -> None:
             _send_welcome_with_votd(bot, message, first_name)
         else:
             intro_text = (
-                f"Welcome back, {first_name}! 👋\n\n"
+                f"Welcome back, {first_name}!\n\n"
                 f"I'm Theo, your scripture companion built for the YOUTHOPIA Bible Community.\n\n"
                 f"Every morning at 6 AM you'll get a verse to start your day grounded in God's word.\n\n"
                 f"Use /enable_votd to subscribe or /help for more options."
@@ -121,7 +122,7 @@ def _send_group_welcome(bot: telebot.TeleBot, chat_id: int) -> None:
         verse_response = _get_votd_verse_response()
 
         welcome_text = (
-            "👋 Hey YOUTHOPIA family! I'm Theo.\n\n"
+            "Hey YOUTHOPIA family! I'm Theo.\n\n"
             "I'm here to anchor this group in daily scripture. Every morning at 6 AM, we receive a verse together.\n\n"
             "Here's today's verse:"
         )
@@ -157,12 +158,15 @@ def _send_welcome_with_votd(
     try:
         verse_response = _get_votd_verse_response()
 
+        tone_intro = get_tone_intro(message.from_user.id, first_name)
+
         welcome_text = (
-            f"🌐 Welcome to the YOUTHOPIA family, {first_name}.\n\n"
+            f"Welcome to the YOUTHOPIA family, {first_name}.\n\n"
             f"I'm Theo. I exist because this community matters.\n\n"
             f"Every morning at 6 AM, I deliver a verse to our entire family. "
             f"We all see it together. We all start our day grounded in the same truth. "
             f"That's the power of what we're building - a digital sanctuary where nobody walks alone.\n\n"
+            f"{tone_intro}\n\n"
             f"Here's today's anchor verse:"
         )
         bot.send_message(message.chat.id, welcome_text)

@@ -185,3 +185,13 @@ def get_verse_history(telegram_id: int, limit: int = 50) -> list:
 
     except Exception:
         return []
+    
+def update_user_tone(telegram_id: int, tone: str) -> bool:
+    """Update the tone preference for a user."""
+    try:
+        supabase.table("users").update({
+            "tone_preference": tone
+        }).eq("telegram_id", telegram_id).execute()
+        return True
+    except Exception:
+        return False

@@ -10,7 +10,6 @@ def register_help(bot: telebot.TeleBot) -> None:
             "Commands:\n"
             "/start - check if Theo is alive\n"
             "/help - show this message\n"
-            "/verse - choose a scripture category\n"
             "/translation [kjv|web|bbe|asv] - view or change translation\n"
             "/enable_votd - enable daily Verse of the Day in this chat\n"
             "/disable_votd - disable daily Verse of the Day in this chat\n"

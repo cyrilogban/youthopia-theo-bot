@@ -221,16 +221,6 @@ Reflections MUST be:
 - Practical
 
 ---
-
-### Anti-Generic Rules
-
-The AI MUST NOT:
-
-- Be robotic
-- Use clichés repeatedly
-- Be vague
-- Repeat structure
-
 ---
 
 ### Style Guidance

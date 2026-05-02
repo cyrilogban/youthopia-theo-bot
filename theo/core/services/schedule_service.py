@@ -17,19 +17,9 @@ from theo.core.services.verse_service import (
     get_votd_category,
 )
 from theo.adapters.telegram.views.keyboards import build_verse_actions_keyboard
-from theo.infra.supabase_user_repo import log_verse_to_history
+from theo.core.services.tone_service import get_tone_intro
 
 logger = logging.getLogger(__name__)
-
-
-def _render_daily_intro(chat_title: str | None, first_name: str | None, is_private: bool) -> str:
-    if is_private and first_name:
-        return f"Good morning, {first_name}. Here is your verse for today:"
-
-    if not is_private and chat_title:
-        return f"Good morning, {chat_title}. Here is your verse for today:"
-
-    return "Good morning. Here is your verse for today:"
 
 
 def daily_job(container: Container, bot: TeleBot) -> None:
@@ -82,11 +72,24 @@ def daily_job(container: Container, bot: TeleBot) -> None:
             chat_title = getattr(chat, "title", None)
             first_name = getattr(chat, "first_name", None)
 
-            intro = _render_daily_intro(
-                chat_title=chat_title,
-                first_name=first_name,
-                is_private=is_private,
-            )
+            # Get tone-based intro
+            if is_private:
+                # For DMs get the user's tone preference
+                from theo.infra.supabase_user_repo import get_user
+                from theo.infra.db.repo import GroupRecord
+                user = None
+                try:
+                    # Find user by chat_id since chat_id == telegram_id in DMs
+                    user = get_user(g.chat_id)
+                except Exception:
+                    pass
+
+                name = first_name or "Friend"
+                telegram_id = g.chat_id if is_private else None
+                intro = get_tone_intro(telegram_id, name)
+            else:
+                name = chat_title or "YouThopia family"
+                intro = f"Good morning, {name}. Here is your verse for today."
 
             bot.send_message(
                 g.chat_id,
@@ -97,18 +100,5 @@ def daily_job(container: Container, bot: TeleBot) -> None:
                 ),
                 parse_mode="HTML",
             )
-
-            # Log to verse history for private chats only
-            if is_private:
-                log_verse_to_history(
-                    telegram_id=g.chat_id,
-                    book=base_verse.reference.book,
-                    chapter=base_verse.reference.chapter,
-                    verse=base_verse.reference.verse,
-                    category=category,
-                    delivery_path="votd",
-                    translation=translation,
-                )
-
         except Exception:
             logger.exception(f"Failed to send daily VOTD message to {g.chat_id}")

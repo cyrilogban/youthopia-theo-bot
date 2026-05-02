@@ -127,13 +127,17 @@ def _send_welcome_with_votd(
             translation=normalized_translation,
         )
 
+        from theo.core.services.tone_service import get_tone_intro
+        tone_intro = get_tone_intro(message.from_user.id, first_name)
+
         welcome_text = (
             f"Welcome to the YOUTHOPIA family, {first_name}.\n\n"
             f"I'm Theo. I exist because this community matters.\n\n"
             f"Every morning at 6 AM, I deliver a verse to our entire family. "
             f"We all see it together. We all start our day grounded in the same truth. "
-            f"That's the power of what we're building - a digital community where nobody walks alone.\n\n"
-            f"Here's today's bible verse:"
+            f"That's the power of what we're building - a digital sanctuary where nobody walks alone.\n\n"
+            f"{tone_intro}\n\n"
+            f"Here's today's anchor verse:"
         )
 
         bot.send_message(message.chat.id, welcome_text)

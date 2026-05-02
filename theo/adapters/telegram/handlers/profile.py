@@ -21,6 +21,19 @@ def build_profile_inline_buttons() -> InlineKeyboardMarkup:
     return keyboard
 
 
+def build_tone_keyboard() -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup()
+    keyboard.row(
+        InlineKeyboardButton("Warm", callback_data="tone|warm"),
+        InlineKeyboardButton("Devotional", callback_data="tone|devotional"),
+    )
+    keyboard.row(
+        InlineKeyboardButton("Bold", callback_data="tone|bold"),
+        InlineKeyboardButton("Gentle", callback_data="tone|gentle"),
+    )
+    return keyboard
+
+
 def register_profile(bot: telebot.TeleBot, container: Container) -> None:
 
     @bot.message_handler(commands=["profile"])
@@ -78,11 +91,7 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
             )
 
         saved_text = "Your Saved Verses:\n\n" + "\n\n".join(sections)
-
-        bot.send_message(
-            message.chat.id,
-            saved_text,
-        )
+        bot.send_message(message.chat.id, saved_text)
 
     @bot.message_handler(
         func=lambda message: message.text == "Verse History",
@@ -110,9 +119,8 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
             category = v.get("category", "")
             delivery_path = v.get("delivery_path", "")
             translation = v.get("translation", "kjv")
-            
             reference = f"{book} {chapter}:{verse}"
-            
+
             try:
                 verse_text = fetch_scripture_text_by_reference(
                     reference,
@@ -120,19 +128,12 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
                 )
             except Exception:
                 verse_text = "Could not fetch verse text."
-            
+
             meta = f"[{category}] via {delivery_path} ({translation.upper()})"
-            
-            sections.append(
-                f"{i}. {reference}\n{verse_text}\n{meta}"
-            )
+            sections.append(f"{i}. {reference}\n{verse_text}\n{meta}")
 
         history_text = "Your Verse History (Last 20):\n\n" + "\n\n".join(sections)
-
-        bot.send_message(
-            message.chat.id,
-            history_text,
-        )
+        bot.send_message(message.chat.id, history_text)
 
     @bot.message_handler(
         func=lambda message: message.text == "Translation",
@@ -151,9 +152,37 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
     def _change_tone_button(message: telebot.types.Message) -> None:
         bot.send_message(
             message.chat.id,
-            "*Change Tone*\n\nThis feature is coming soon!",
-            parse_mode="Markdown"
+            "Choose your preferred tone. This affects how Theo greets you with each verse.",
+            reply_markup=build_tone_keyboard(),
         )
+
+    @bot.callback_query_handler(
+        func=lambda call: str(getattr(call, "data", "")).startswith("tone|")
+    )
+    def _tone_callbacks(call: telebot.types.CallbackQuery) -> None:
+        tone = call.data.split("|")[1]
+        valid_tones = ["warm", "devotional", "bold", "gentle"]
+
+        if tone not in valid_tones:
+            bot.answer_callback_query(call.id)
+            return
+
+        from theo.infra.supabase_user_repo import update_user_tone
+        telegram_id = call.from_user.id
+        updated = update_user_tone(telegram_id, tone)
+
+        if updated:
+            bot.answer_callback_query(
+                call.id,
+                f"Your tone has been set to {tone.capitalize()}.",
+                show_alert=True
+            )
+        else:
+            bot.answer_callback_query(
+                call.id,
+                "Could not update your tone. Please try again.",
+                show_alert=True
+            )
 
     @bot.callback_query_handler(
         func=lambda call: str(getattr(call, "data", "")).startswith("profile|")
@@ -169,10 +198,11 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
             )
 
         elif action == "tone":
-            bot.answer_callback_query(
-                call.id,
-                "Change Tone feature coming soon!",
-                show_alert=True
+            bot.answer_callback_query(call.id)
+            bot.send_message(
+                call.message.chat.id,
+                "Choose your preferred tone. This affects how Theo greets you with each verse.",
+                reply_markup=build_tone_keyboard(),
             )
 
         elif action == "saved_verses":
@@ -216,10 +246,7 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
 
                 saved_text = "Your Saved Verses:\n\n" + "\n\n".join(sections)
                 bot.answer_callback_query(call.id)
-                bot.send_message(
-                    call.message.chat.id,
-                    saved_text,
-                )
+                bot.send_message(call.message.chat.id, saved_text)
 
         elif action == "verse_history":
             from theo.infra.supabase_user_repo import get_verse_history
@@ -243,9 +270,8 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
                     category = v.get("category", "")
                     delivery_path = v.get("delivery_path", "")
                     translation = v.get("translation", "kjv")
-                    
                     reference = f"{book} {chapter}:{verse}"
-                    
+
                     try:
                         verse_text = fetch_scripture_text_by_reference(
                             reference,
@@ -253,19 +279,13 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
                         )
                     except Exception:
                         verse_text = "Could not fetch verse text."
-                    
+
                     meta = f"[{category}] via {delivery_path} ({translation.upper()})"
-                    
-                    sections.append(
-                        f"{i}. {reference}\n{verse_text}\n{meta}"
-                    )
+                    sections.append(f"{i}. {reference}\n{verse_text}\n{meta}")
 
                 history_text = "Your Verse History (Last 20):\n\n" + "\n\n".join(sections)
                 bot.answer_callback_query(call.id)
-                bot.send_message(
-                    call.message.chat.id,
-                    history_text,
-                )
+                bot.send_message(call.message.chat.id, history_text)
 
         else:
             bot.answer_callback_query(call.id)

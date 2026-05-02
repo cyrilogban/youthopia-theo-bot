@@ -30,8 +30,8 @@ def render_verse_lookup_error(category: str) -> str:
 
 def render_inline_help() -> str:
     return (
-        "Use /verse to browse categories, or choose a specific menu command like "
-        "/hope, /peace, or /love."
+        "Use the inline query @iamtheobot to search verses, or choose categories like "
+        "hope, peace, or love."
     )
 
 
