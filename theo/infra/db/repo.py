@@ -16,12 +16,12 @@ class GroupRecord:
     title: Optional[str] = None
     enabled: bool = True
     translation: str = "kjv"
+    is_official: bool = False
 
 
 class GroupRepo(Protocol):
     """
     Storage contract for chats/groups.
-
     Any database implementation (Mongo, Postgres, mock) must provide these methods.
     """
 
@@ -34,8 +34,12 @@ class GroupRepo(Protocol):
     def enable_group(self, chat_id: int) -> bool:
         """Enable daily broadcasts for a chat. Returns True if changed."""
 
+    def set_group_official_status(self, chat_id: int, status: bool) -> bool:
+        """Set whether a group is an official community group. Returns True if changed."""
+
     def get_group(self, chat_id: int) -> Optional[GroupRecord]:
         """Fetch a chat by chat_id. Return None if not found."""
 
     def list_enabled_groups(self) -> Iterable[GroupRecord]:
         """Return all chats where enabled=True."""
+

@@ -41,6 +41,10 @@ class MongoGroupRepo(GroupRepo):
         result = self._col.update_one({"chat_id": chat_id}, {"$set": {"enabled": False}})
         return result.modified_count > 0
 
+    def set_group_official_status(self, chat_id: int, status: bool) -> bool:
+        result = self._col.update_one({"chat_id": chat_id}, {"$set": {"is_official": status}})
+        return result.modified_count > 0
+
     def get_group(self, chat_id: int) -> Optional[GroupRecord]:
         doc = self._col.find_one({"chat_id": chat_id})
         if not doc:
@@ -59,4 +63,5 @@ class MongoGroupRepo(GroupRepo):
             title=doc.get("title"),
             enabled=bool(doc.get("enabled", True)),
             translation=get_translation_or_default(doc.get("translation")),
+            is_official=bool(doc.get("is_official", False)),
         )

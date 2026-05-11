@@ -38,6 +38,14 @@ def register_admin(bot: telebot.TeleBot, container: Container) -> None:
 
         for sub in subscribers:
             try:
+                # GATEKEEPER LOGIC:
+                # 1. Always allow Private DMs (chat_id > 0)
+                # 2. Only allow Groups (chat_id < 0) if they are marked as 'is_official'
+                is_private_dm = sub.chat_id > 0
+                if not is_private_dm and not sub.is_official:
+                    logger.info(f"Skipping broadcast to unauthorized group: {sub.chat_id}")
+                    continue
+
                 bot.send_message(sub.chat_id, broadcast_content)
                 sent_count += 1
             except Exception as e:
@@ -49,3 +57,33 @@ def register_admin(bot: telebot.TeleBot, container: Container) -> None:
             message_id=status_msg.message_id,
             text=f"✅ Broadcast complete!\n\nSuccessfully sent to: {sent_count}\nFailed: {fail_count}"
         )
+
+    @bot.message_handler(commands=["whitelist"])
+    def on_whitelist(message: telebot.types.Message) -> None:
+        user_id = message.from_user.id
+        if user_id not in container.settings.admin_ids:
+            return
+
+        chat_id = message.chat.id
+        if chat_id > 0:
+            bot.reply_to(message, "This command can only be used in groups.")
+            return
+
+        repo = container.group_repo
+        repo.set_group_official_status(chat_id, True)
+        bot.reply_to(message, "✅ This group is now whitelisted for official broadcasts.")
+
+    @bot.message_handler(commands=["unwhitelist"])
+    def on_unwhitelist(message: telebot.types.Message) -> None:
+        user_id = message.from_user.id
+        if user_id not in container.settings.admin_ids:
+            return
+
+        chat_id = message.chat.id
+        if chat_id > 0:
+            bot.reply_to(message, "This command can only be used in groups.")
+            return
+
+        repo = container.group_repo
+        repo.set_group_official_status(chat_id, False)
+        bot.reply_to(message, "❌ This group has been removed from official broadcasts.")
