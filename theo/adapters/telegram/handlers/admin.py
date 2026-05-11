@@ -114,3 +114,49 @@ def register_admin(bot: telebot.TeleBot, container: Container) -> None:
         )
         
         bot.send_message(message.chat.id, stats_text, parse_mode="Markdown")
+
+    @bot.message_handler(commands=["addverse"])
+    def on_addverse(message: telebot.types.Message) -> None:
+        user_id = message.from_user.id
+        if user_id not in container.settings.admin_ids:
+            return
+
+        # Expected format: /addverse <category> <reference>
+        # e.g. /addverse hope John 3:16
+        parts = message.text.split(None, 2)
+        if len(parts) < 3:
+            bot.reply_to(message, "Usage: /addverse <category> <book chapter:verse>\nExample: /addverse hope John 3:16")
+            return
+
+        category = parts[1].lower()
+        reference_text = parts[2]
+
+        from theo.core.services.reference_detection_service import parse_all_references
+        from theo.infra.supabase_verse_repo import get_all_categories, add_verse_to_db
+
+        # 1. Validate category
+        valid_categories = get_all_categories()
+        if category not in valid_categories:
+            bot.reply_to(message, f"❌ Invalid category '{category}'.\nValid ones: {', '.join(valid_categories)}")
+            return
+
+        # 2. Parse reference
+        refs = parse_all_references(reference_text)
+        if not refs:
+            bot.reply_to(message, f"❌ Could not parse reference: '{reference_text}'")
+            return
+        
+        # Take the first reference found
+        ref = refs[0]
+        book = ref.book
+        chapter = ref.chapter
+        # Use start verse if it's a range
+        verse = ref.verse_start
+
+        # 3. Add to DB
+        success = add_verse_to_db(category, book, chapter, verse)
+        
+        if success:
+            bot.reply_to(message, f"✅ Successfully added *{book} {chapter}:{verse}* to the *{category}* category.", parse_mode="Markdown")
+        else:
+            bot.reply_to(message, f"❌ Failed to add verse. It might already exist in the *{category}* category.", parse_mode="Markdown")

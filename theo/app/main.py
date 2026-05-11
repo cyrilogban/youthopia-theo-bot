@@ -119,6 +119,7 @@ def main() -> None:
         admin_commands = commands + [
             telebot.types.BotCommand("broadcast", "Send mass message"),
             telebot.types.BotCommand("stats", "View community stats"),
+            telebot.types.BotCommand("addverse", "Add verse to database"),
             telebot.types.BotCommand("whitelist", "Authorize this group"),
             telebot.types.BotCommand("unwhitelist", "Deauthorize this group"),
         ]

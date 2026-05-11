@@ -95,3 +95,30 @@ def get_all_categories() -> list:
     """Get all category names."""
     result = supabase.table("categories").select("name").execute()
     return [row["name"] for row in result.data]
+
+def add_verse_to_db(category_name: str, book: str, chapter: int, verse: int) -> bool:
+    """Add a new verse reference to the database. Returns True if successful."""
+    try:
+        # 1. Get category_id
+        category = supabase.table("categories").select("id").eq("name", category_name.lower()).execute()
+        if not category.data:
+            return False
+
+        category_id = category.data[0]["id"]
+
+        # 2. Check for duplicates
+        existing = supabase.table("verses").select("id").eq("category_id", category_id).eq("book", book).eq("chapter", chapter).eq("verse", verse).execute()
+        if existing.data:
+            return False
+
+        # 3. Insert
+        supabase.table("verses").insert({
+            "category_id": category_id,
+            "book": book,
+            "chapter": chapter,
+            "verse": verse
+        }).execute()
+
+        return True
+    except Exception:
+        return False
