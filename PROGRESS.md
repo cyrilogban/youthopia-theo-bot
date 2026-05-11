@@ -114,6 +114,12 @@
     - Uses built-in reference detection to parse and normalize book/chapter/verse.
     - Built-in duplicate protection to prevent identical entries in the same category.
   - **Curated VOTD Growth**: Verses added via Telegram are immediately eligible for the daily rotation.
+- **Anonymous Bridge Q&A System**: Created a secure, two-way bridge for community engagement and mentorship.
+  - **New UI Button**: "Ask Anonymously" button added prominently to the main menu grid.
+  - **Automated Broadcasting**: Questions submitted privately are assigned a Reference ID and posted to whitelisted groups for discussion.
+  - **Private Admin Notification**: Admins receive questions privately with a shortcut to reply.
+  - **Secure Proxy Replies**: New `/reply <ID> <message>` command allows admins to send private, anonymous support back to the original asker.
+  - **Database Tracking**: New `anonymous_questions` table in Supabase manages question state and user mapping safely.
 
 ## Storage / Data Progress
 
