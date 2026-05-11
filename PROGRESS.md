@@ -100,6 +100,13 @@
     - Only deliver to groups explicitly marked as `is_official`.
   - **Group-Only Enforcement**: Whitelist commands are restricted to group chats only.
 - **Improved Broadcast Reliability**: Logic now skips unauthorized groups silently while logging the action for admin review.
+- **Community Stats Dashboard**: Implemented a real-time analytics command for admins.
+  - **New Admin Command**: `/stats` command provides a high-level overview of bot engagement.
+  - **Multi-DB Aggregation**: Logic pulls data from both MongoDB (distribution) and Supabase (engagement).
+  - **Key Metrics Tracked**:
+    - Reach: Total users, Active vs Total DMs, and Active vs Total Groups.
+    - Engagement: Verses sent in the last 24 hours and total saved verses.
+  - **Admin Visibility**: Integrated into the targeted admin-only menu for secure access.
 
 ## Storage / Data Progress
 
