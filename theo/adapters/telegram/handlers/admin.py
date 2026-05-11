@@ -87,3 +87,30 @@ def register_admin(bot: telebot.TeleBot, container: Container) -> None:
         repo = container.group_repo
         repo.set_group_official_status(chat_id, False)
         bot.reply_to(message, "❌ This group has been removed from official broadcasts.")
+
+    @bot.message_handler(commands=["stats"])
+    def on_stats(message: telebot.types.Message) -> None:
+        user_id = message.from_user.id
+        if user_id not in container.settings.admin_ids:
+            return
+
+        from theo.infra.supabase_user_repo import get_community_stats
+        
+        # 1. Get MongoDB stats (Groups & DMs)
+        mongo_stats = container.group_repo.get_stats()
+        
+        # 2. Get Supabase stats (Users & Engagement)
+        supabase_stats = get_community_stats()
+        
+        stats_text = (
+            "📊 *Community Stats Summary*\n\n"
+            "*Reach*\n"
+            f"• Total Users: {supabase_stats['total_users']}\n"
+            f"• Active DMs: {mongo_stats['active_dms']} / {mongo_stats['total_dms']}\n"
+            f"• Active Groups: {mongo_stats['active_groups']} / {mongo_stats['total_groups']}\n\n"
+            "*Engagement*\n"
+            f"• Verses Sent (24h): {supabase_stats['verses_last_24h']}\n"
+            f"• Total Saved Verses: {supabase_stats['total_saved_verses']}"
+        )
+        
+        bot.send_message(message.chat.id, stats_text, parse_mode="Markdown")

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from theo.infra.supabase_client import supabase
 
 
@@ -195,3 +195,29 @@ def update_user_tone(telegram_id: int, tone: str) -> bool:
         return True
     except Exception:
         return False
+
+def get_community_stats() -> dict:
+    """Aggregate high-level community engagement metrics from Supabase."""
+    stats = {
+        "total_users": 0,
+        "total_saved_verses": 0,
+        "verses_last_24h": 0,
+    }
+    try:
+        # 1. Total users
+        res_users = supabase.table("users").select("telegram_id", count="exact").execute()
+        stats["total_users"] = res_users.count or 0
+
+        # 2. Total saved verses
+        res_saved = supabase.table("saved_verses").select("id", count="exact").execute()
+        stats["total_saved_verses"] = res_saved.count or 0
+
+        # 3. Verses sent in last 24 hours
+        yesterday = (datetime.now() - timedelta(hours=24)).isoformat()
+        res_history = supabase.table("verse_history").select("id", count="exact").filter("delivered_at", "gte", yesterday).execute()
+        stats["verses_last_24h"] = res_history.count or 0
+
+    except Exception:
+        pass
+
+    return stats

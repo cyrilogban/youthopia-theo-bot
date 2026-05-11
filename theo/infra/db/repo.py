@@ -43,3 +43,6 @@ class GroupRepo(Protocol):
     def list_enabled_groups(self) -> Iterable[GroupRecord]:
         """Return all chats where enabled=True."""
 
+    def get_stats(self) -> dict:
+        """Return a dictionary of subscription statistics."""
+

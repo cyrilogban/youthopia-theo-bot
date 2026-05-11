@@ -56,6 +56,19 @@ class MongoGroupRepo(GroupRepo):
         for doc in cursor:
             yield self._doc_to_record(doc)
 
+    def get_stats(self) -> dict:
+        total_groups = self._col.count_documents({"chat_id": {"$lt": 0}})
+        active_groups = self._col.count_documents({"chat_id": {"$lt": 0}, "enabled": True})
+        total_dms = self._col.count_documents({"chat_id": {"$gt": 0}})
+        active_dms = self._col.count_documents({"chat_id": {"$gt": 0}, "enabled": True})
+
+        return {
+            "total_groups": total_groups,
+            "active_groups": active_groups,
+            "total_dms": total_dms,
+            "active_dms": active_dms,
+        }
+
     @staticmethod
     def _doc_to_record(doc: dict) -> GroupRecord:
         return GroupRecord(
