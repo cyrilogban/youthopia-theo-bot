@@ -107,6 +107,13 @@
     - Reach: Total users, Active vs Total DMs, and Active vs Total Groups.
     - Engagement: Verses sent in the last 24 hours and total saved verses.
   - **Admin Visibility**: Integrated into the targeted admin-only menu for secure access.
+- **Add Verses on the Fly**: Implemented instant database curation directly from Telegram.
+  - **New Admin Command**: `/addverse <category> <reference>` adds scriptures to the Supabase pool.
+  - **Smart Validation**:
+    - Automatically validates categories against the database.
+    - Uses built-in reference detection to parse and normalize book/chapter/verse.
+    - Built-in duplicate protection to prevent identical entries in the same category.
+  - **Curated VOTD Growth**: Verses added via Telegram are immediately eligible for the daily rotation.
 
 ## Storage / Data Progress
 
