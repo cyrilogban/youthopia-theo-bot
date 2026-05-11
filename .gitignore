@@ -20,3 +20,6 @@ __pycache__/
 .pytest_cache/
 .env.example
 
+# VS Code workspace
+*.code-workspace
+

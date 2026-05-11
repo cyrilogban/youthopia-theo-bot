@@ -8,6 +8,7 @@ class Settings:
     bot_token: str
     mongo_uri: str
     mongo_db_name: str
+    admin_ids: list[int]
 
 
 def load_settings() -> Settings:
@@ -16,6 +17,13 @@ def load_settings() -> Settings:
     bot_token = os.getenv("BOT_TOKEN", "").strip()
     mongo_uri = os.getenv("MONGO_URI", "").strip()
     mongo_db_name = os.getenv("MONGO_DB_NAME", "theo").strip()
+
+    admin_ids_raw = os.getenv("ADMIN_IDS", "").strip()
+    admin_ids = [
+        int(id_.strip())
+        for id_ in admin_ids_raw.split(",")
+        if id_.strip().lstrip("-").isdigit()
+    ]
 
     if not bot_token:
         raise ValueError("BOT_TOKEN is missing. Put it in your .env file.")
@@ -27,4 +35,5 @@ def load_settings() -> Settings:
         bot_token=bot_token,
         mongo_uri=mongo_uri,
         mongo_db_name=mongo_db_name,
+        admin_ids=admin_ids,
     )

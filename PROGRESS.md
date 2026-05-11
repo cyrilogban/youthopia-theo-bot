@@ -66,8 +66,13 @@
 - Kept global bot parse mode unchanged and applied HTML only to scripture sends/edits
 - Daily VOTD now includes a personalized greeting before the verse
 
-## Recently Completed (Session 3)
+## Recently Completed (Session 4)
 
+- **Broadcast Message Feature**: Implemented a `/broadcast` command for authenticated admins.
+  - **Admin Authentication**: Added `ADMIN_IDS` to configuration, allowing multi-admin support via environment variables.
+  - **Mass Delivery**: Messages are delivered to all active subscribers (both groups and private DMs).
+  - **Progress Tracking**: Real-time status updates during delivery (sent vs failed counts).
+  - **Security**: Unauthorized attempts are logged and ignored.
 - **Verse History Infrastructure**: Added Supabase table with user_id, book, chapter, verse, category, delivery_path, translation, delivered_at
 - **Verse History Logging**: Wired into all 5 verse delivery paths:
   - VOTD delivery (schedule_service.py)
