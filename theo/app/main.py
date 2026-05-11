@@ -102,9 +102,11 @@ def main() -> None:
     keep_alive()
     # Set command menu
     try:
+        # 1. Default commands for everyone
         commands = [
             telebot.types.BotCommand("start", "Begin using Theo"),
             telebot.types.BotCommand("verse", "Get a scripture"),
+            telebot.types.BotCommand("profile", "View your profile"),
             telebot.types.BotCommand("status", "Check subscription status"),
             telebot.types.BotCommand("enable_votd", "Enable daily verses"),
             telebot.types.BotCommand("disable_votd", "Stop daily verses"),
@@ -112,6 +114,24 @@ def main() -> None:
             telebot.types.BotCommand("help", "Show all commands"),
         ]
         bot.set_my_commands(commands)
+
+        # 2. Admin commands (Default + Admin Tools)
+        admin_commands = commands + [
+            telebot.types.BotCommand("broadcast", "Send mass message"),
+            telebot.types.BotCommand("whitelist", "Authorize this group"),
+            telebot.types.BotCommand("unwhitelist", "Deauthorize this group"),
+        ]
+
+        # Apply admin menu specifically to each admin's private chat
+        for admin_id in settings.admin_ids:
+            try:
+                bot.set_my_commands(
+                    admin_commands,
+                    scope=telebot.types.BotCommandScopeChat(admin_id)
+                )
+            except Exception as e:
+                logger.warning(f"Could not set admin commands for {admin_id}: {e}")
+
         logger.info("Bot commands menu updated successfully.")
     except Exception as e:
         logger.error(f"Failed to set bot commands: {e}")
