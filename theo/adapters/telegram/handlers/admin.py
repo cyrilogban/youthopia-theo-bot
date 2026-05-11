@@ -131,7 +131,7 @@ def register_admin(bot: telebot.TeleBot, container: Container) -> None:
         category = parts[1].lower()
         reference_text = parts[2]
 
-        from theo.core.services.reference_detection_service import parse_all_references
+        from theo.core.services.reference_detection_service import find_scripture_references
         from theo.infra.supabase_verse_repo import get_all_categories, add_verse_to_db
 
         # 1. Validate category
@@ -141,7 +141,7 @@ def register_admin(bot: telebot.TeleBot, container: Container) -> None:
             return
 
         # 2. Parse reference
-        refs = parse_all_references(reference_text)
+        refs = find_scripture_references(reference_text)
         if not refs:
             bot.reply_to(message, f"❌ Could not parse reference: '{reference_text}'")
             return
