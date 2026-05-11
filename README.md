@@ -30,6 +30,7 @@ Theo is a Telegram Bible bot built for the YouThopia Bible Community. It deliver
 - Keep-alive HTTP endpoint for deployment environments
 - Automatic group welcome messages with VOTD
 - Bot mention detection in groups (@iamtheobot)
+- **Official Community Whitelisting** - Admins can whitelist specific groups to receive official broadcasts, ensuring messages only reach the intended audience.
 
 ## VOTD Weekday Rotation
 
@@ -118,6 +119,7 @@ Theo reads configuration from a local `.env` file.
 - `MONGO_URI` - MongoDB connection string
 - `SUPABASE_URL` - Supabase project URL
 - `SUPABASE_KEY` - Supabase anon/public key
+- `ADMIN_IDS` - Comma-separated list of Telegram User IDs authorized for admin commands
 
 **Optional variables:**
 
@@ -145,6 +147,9 @@ PORT=8080
 - `/status` - Check subscription status
 - `/translation` - View or change translation preference
 - `/profile` - View user profile and preferences
+- `/broadcast <message>` - (Admin only) Send a mass message to all DMs and whitelisted groups
+- `/whitelist` - (Admin only, Group only) Authorize a group to receive official community broadcasts
+- `/unwhitelist` - (Admin only, Group only) Remove a group from official broadcasts
 - `/help` - Show command help
 
 ## Supported Translations

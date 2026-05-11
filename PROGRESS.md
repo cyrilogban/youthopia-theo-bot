@@ -90,6 +90,17 @@
   - `get_verse_history()` - Retrieve user's recent verses
 - **Profile Feature**: "Verse History" button now functional (no longer "coming soon")
 
+## Recently Completed (Session 5)
+
+- **Official Community Whitelisting**: Added a security layer to restrict broadcasts to official groups.
+  - **New Admin Commands**: Added `/whitelist` and `/unwhitelist` commands for authorized admins.
+  - **Database Flag**: Added `is_official` boolean to `GroupRecord` schema (MongoDB).
+  - **Broadcast Gatekeeper**: Updated the `/broadcast` logic to:
+    - Always deliver to Private DMs.
+    - Only deliver to groups explicitly marked as `is_official`.
+  - **Group-Only Enforcement**: Whitelist commands are restricted to group chats only.
+- **Improved Broadcast Reliability**: Logic now skips unauthorized groups silently while logging the action for admin review.
+
 ## Storage / Data Progress
 
 - Categories and verse references now come from Supabase tables (`categories`, `verses`, `votd_log`)
