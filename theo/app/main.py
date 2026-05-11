@@ -105,7 +105,6 @@ def main() -> None:
         # 1. Default commands for everyone
         commands = [
             telebot.types.BotCommand("start", "Begin using Theo"),
-            telebot.types.BotCommand("ask", "Ask a question anonymously"),
             telebot.types.BotCommand("verse", "Get a scripture"),
             telebot.types.BotCommand("profile", "View your profile"),
             telebot.types.BotCommand("status", "Check subscription status"),
