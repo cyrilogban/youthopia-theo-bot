@@ -9,6 +9,7 @@ from theo.adapters.telegram.handlers.autodetect import register_autodetect
 from theo.adapters.telegram.handlers.verse import register_verse
 from theo.adapters.telegram.handlers.profile import register_profile
 from theo.adapters.telegram.handlers.admin import register_admin
+from theo.adapters.telegram.handlers.questions import register_questions
 
 
 def register_routes(bot: TeleBot, container: Container) -> None:
@@ -20,3 +21,4 @@ def register_routes(bot: TeleBot, container: Container) -> None:
     register_verse(bot, container)
     register_autodetect(bot, container)
     register_admin(bot, container)
+    register_questions(bot, container)

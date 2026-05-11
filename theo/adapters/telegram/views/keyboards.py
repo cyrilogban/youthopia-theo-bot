@@ -45,6 +45,7 @@ def build_main_menu_keyboard() -> ReplyKeyboardMarkup:
         is_persistent=True,
     )
     keyboard.row(KeyboardButton("My Profile"))
+    keyboard.row(KeyboardButton("Ask Anonymously"))
     keyboard.row(
         KeyboardButton("Saved Verses"),
         KeyboardButton("Verse History"),

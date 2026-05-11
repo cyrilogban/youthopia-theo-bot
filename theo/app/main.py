@@ -105,6 +105,7 @@ def main() -> None:
         # 1. Default commands for everyone
         commands = [
             telebot.types.BotCommand("start", "Begin using Theo"),
+            telebot.types.BotCommand("ask", "Ask a question anonymously"),
             telebot.types.BotCommand("verse", "Get a scripture"),
             telebot.types.BotCommand("profile", "View your profile"),
             telebot.types.BotCommand("status", "Check subscription status"),
@@ -118,6 +119,7 @@ def main() -> None:
         # 2. Admin commands (Default + Admin Tools)
         admin_commands = commands + [
             telebot.types.BotCommand("broadcast", "Send mass message"),
+            telebot.types.BotCommand("reply", "Reply to anon question"),
             telebot.types.BotCommand("stats", "View community stats"),
             telebot.types.BotCommand("addverse", "Add verse to database"),
             telebot.types.BotCommand("whitelist", "Authorize this group"),
