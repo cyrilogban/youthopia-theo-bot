@@ -127,6 +127,7 @@
   - **Dynamic Configuration**: Updated `.env` and `Settings` to handle comma-separated list of Calendar IDs.
   - **Event Aggregation**: Refactored `CalendarService` to fetch, merge, and sort events from all configured calendars chronologically.
   - **Daily Admin Reminders**: Integrated calendar summaries into the daily scheduler for admin users.
+  - **Manual Schedule Control**: Added an admin-only `/schedule` command to fetch the latest calendar summary on demand.
 - **Environment Stability**: Resolved critical Python environment issues.
   - **Dependency Fixes**: Installed missing Google API client libraries.
   - **Venv Pathing**: Identified and documented workarounds for broken virtual environment launchers caused by directory moves.

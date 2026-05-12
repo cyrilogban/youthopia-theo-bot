@@ -160,3 +160,17 @@ def register_admin(bot: telebot.TeleBot, container: Container) -> None:
             bot.reply_to(message, f"✅ Successfully added *{book} {chapter}:{verse}* to the *{category}* category.", parse_mode="Markdown")
         else:
             bot.reply_to(message, f"❌ Failed to add verse. It might already exist in the *{category}* category.", parse_mode="Markdown")
+
+    @bot.message_handler(commands=["schedule"])
+    def on_schedule(message: telebot.types.Message) -> None:
+        user_id = message.from_user.id
+        if user_id not in container.settings.admin_ids:
+            return
+
+        bot.send_chat_action(message.chat.id, 'typing')
+        try:
+            summary = container.calendar_service.generate_daily_summary()
+            bot.reply_to(message, summary, parse_mode="Markdown")
+        except Exception as e:
+            logger.error(f"Failed to fetch schedule for admin {user_id}: {e}")
+            bot.reply_to(message, f"❌ Could not fetch your calendar: {str(e)}")
