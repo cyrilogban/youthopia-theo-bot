@@ -7,3 +7,5 @@ APScheduler
 requests
 pytest
 supabase==2.10.0
+google-api-python-client
+google-auth

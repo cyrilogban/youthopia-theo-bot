@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 logger = logging.getLogger(__name__)
 
 NIGERIA_TIMEZONE = ZoneInfo("Africa/Lagos")
-DAILY_SEND_HOUR = 6
+DAILY_SEND_HOUR = 1
 DAILY_SEND_MINUTE = 0
 
 
@@ -23,6 +23,6 @@ def start_scheduler(job_func):
     )
 
     scheduler.start()
-    logger.info("Scheduler started for daily VOTD at 06:00 Africa/Lagos.")
+    logger.info(f"Scheduler started for daily reminders at {DAILY_SEND_HOUR:02d}:{DAILY_SEND_MINUTE:02d} Africa/Lagos.")
 
     return scheduler

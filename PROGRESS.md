@@ -121,6 +121,22 @@
   - **Secure Proxy Replies**: New `/reply <ID> <message>` command allows admins to send private, anonymous support back to the original asker.
   - **Database Tracking**: New `anonymous_questions` table in Supabase manages question state and user mapping safely.
 
+## Recently Completed (Session 6)
+
+- **Multi-Calendar Support**: Refactored the Google Calendar integration to support multiple sources.
+  - **Dynamic Configuration**: Updated `.env` and `Settings` to handle comma-separated list of Calendar IDs.
+  - **Event Aggregation**: Refactored `CalendarService` to fetch, merge, and sort events from all configured calendars chronologically.
+  - **Daily Admin Reminders**: Integrated calendar summaries into the daily scheduler for admin users.
+- **Environment Stability**: Resolved critical Python environment issues.
+  - **Dependency Fixes**: Installed missing Google API client libraries.
+  - **Venv Pathing**: Identified and documented workarounds for broken virtual environment launchers caused by directory moves.
+  - **Dotenv Robustness**: Added `override=True` to environment loading to ensure real-time configuration updates are respected.
+
+### Bug Fixes (Session 5)
+- **Handler Priority Resolution**: Fixed an issue where the "Ask Anonymously" button (and potentially other UI buttons) were non-responsive.
+  - **The Error**: The `autodetect` handler was catching plain text button messages before the specialized handlers could see them.
+  - **The Fix**: Reordered `router.py` to prioritize specialized UI and Admin handlers over catch-all text detection logic.
+
 ## Storage / Data Progress
 
 - Categories and verse references now come from Supabase tables (`categories`, `verses`, `votd_log`)

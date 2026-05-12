@@ -25,6 +25,18 @@ logger = logging.getLogger(__name__)
 def daily_job(container: Container, bot: TeleBot) -> None:
     logger.info("Scheduler triggered daily_job()")
 
+    # 1. Daily Calendar Reminders for Admin
+    if container.settings.admin_ids:
+        try:
+            summary = container.calendar_service.generate_daily_summary()
+            # Send to the primary admin (first in list)
+            admin_id = container.settings.admin_ids[0]
+            bot.send_message(admin_id, summary, parse_mode="Markdown")
+            logger.info(f"Daily calendar summary sent to admin {admin_id}")
+        except Exception:
+            logger.exception("Failed to send daily calendar summary to admin.")
+
+    # 2. Daily VOTD for Groups
     repo = container.group_repo
     groups = list(repo.list_enabled_groups())
     logger.info(f"Enabled groups count: {len(groups)}")
