@@ -91,14 +91,15 @@ def register_start(bot: telebot.TeleBot, container: Container | None = None) -> 
         )
 
         if is_new:
-            _send_welcome_with_votd(bot, message, first_name)
+            _send_welcome_with_votd(bot, message, container, first_name)
         else:
-            _send_simple_welcome(bot, message, first_name)
+            _send_simple_welcome(bot, message, container, first_name)
 
 
 def _send_welcome_with_votd(
     bot: telebot.TeleBot,
     message: telebot.types.Message,
+    container: Container,
     first_name: str
 ) -> None:
     """Send welcome message with today's VOTD for new users."""
@@ -153,7 +154,13 @@ def _send_welcome_with_votd(
             parse_mode="HTML",
         )
 
-        from theo.adapters.telegram.views.keyboards import build_main_menu_keyboard
+        from theo.adapters.telegram.views.keyboards import (
+            build_user_main_menu_keyboard,
+            build_admin_main_menu_keyboard
+        )
+        
+        is_admin = message.from_user.id in container.settings.admin_ids
+        keyboard = build_admin_main_menu_keyboard() if is_admin else build_user_main_menu_keyboard()
 
         cta_text = (
             "*Want verses every morning?*\n"
@@ -163,7 +170,7 @@ def _send_welcome_with_votd(
         bot.send_message(
             message.chat.id,
             cta_text,
-            reply_markup=build_main_menu_keyboard(),
+            reply_markup=keyboard,
             parse_mode="Markdown"
         )
 
@@ -175,15 +182,23 @@ def _send_welcome_with_votd(
 
     except Exception:
         logger.exception("Failed to send welcome with VOTD")
-        _send_simple_welcome(bot, message, first_name)
+        _send_simple_welcome(bot, message, container, first_name)
 
 
 def _send_simple_welcome(
     bot: telebot.TeleBot,
     message: telebot.types.Message,
+    container: Container,
     first_name: str
 ) -> None:
-    from theo.adapters.telegram.views.keyboards import build_main_menu_keyboard
+    from theo.adapters.telegram.views.keyboards import (
+        build_user_main_menu_keyboard,
+        build_admin_main_menu_keyboard
+    )
+    
+    is_admin = message.from_user.id in container.settings.admin_ids
+    keyboard = build_admin_main_menu_keyboard() if is_admin else build_user_main_menu_keyboard()
+
     text = (
         f"Welcome back, {first_name}!\n\n"
         f"I'm Theo, your scripture companion built for the YOUTHOPIA Bible Community.\n\n"
@@ -193,7 +208,7 @@ def _send_simple_welcome(
     bot.send_message(
         message.chat.id,
         text,
-        reply_markup=build_main_menu_keyboard()
+        reply_markup=keyboard
     )
 
     bot.send_message(

@@ -156,6 +156,36 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
             reply_markup=build_tone_keyboard(),
         )
 
+    @bot.message_handler(
+        func=lambda message: message.text == "Subscription",
+        content_types=["text"]
+    )
+    def _subscription_button(message: telebot.types.Message) -> None:
+        repo = container.group_repo
+        record = repo.get_group(message.chat.id)
+        is_enabled = record.enabled if record else False
+        
+        status_text = "ENABLED ✅" if is_enabled else "DISABLED ❌"
+        
+        text = (
+            f"🔔 *Daily Verse Subscription*\n\n"
+            f"Current Status: *{status_text}*\n\n"
+            "When enabled, you will receive a curated verse every morning at 6 AM."
+        )
+        
+        keyboard = InlineKeyboardMarkup()
+        if is_enabled:
+            keyboard.row(InlineKeyboardButton("Disable Daily Verses", callback_data="start|disable_votd"))
+        else:
+            keyboard.row(InlineKeyboardButton("Enable Daily Verses", callback_data="start|enable_votd"))
+            
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=keyboard,
+            parse_mode="Markdown"
+        )
+
     @bot.callback_query_handler(
         func=lambda call: str(getattr(call, "data", "")).startswith("tone|")
     )

@@ -20,7 +20,7 @@ def register_routes(bot: TeleBot, container: Container) -> None:
 
     # 2. Command & Interaction handlers
     register_start(bot, container)
-    register_help(bot)
+    register_help(bot, container)
     register_groups(bot, container)
     register_verse(bot, container)
 
