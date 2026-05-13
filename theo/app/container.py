@@ -28,7 +28,7 @@ def build_container(settings: Settings) -> Container:
     calendar_client = GoogleCalendarClient(creds_path=settings.google_creds_path)
     calendar_service = CalendarService(
         client=calendar_client,
-        calendar_id=settings.google_calendar_id
+        calendar_ids=settings.google_calendar_ids
     )
 
     return Container(

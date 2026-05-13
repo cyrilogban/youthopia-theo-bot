@@ -23,7 +23,9 @@ class GoogleCalendarClient:
 
     def get_events_for_today(self, calendar_id: str) -> list:
         """Fetches events for the current day from the specified calendar."""
-        now = datetime.now(timezone.utc)
+        from zoneinfo import ZoneInfo
+        tz = ZoneInfo("Africa/Lagos")
+        now = datetime.now(tz)
         start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
         end_of_day = now.replace(hour=23, minute=59, second=59, microsecond=999999).isoformat()
 

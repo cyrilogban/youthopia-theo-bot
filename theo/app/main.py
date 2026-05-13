@@ -1,5 +1,6 @@
 # theo/app/main.py
 import logging
+
 import time
 
 """
@@ -117,6 +118,7 @@ def main() -> None:
 
         # 2. Admin commands (Default + Admin Tools)
         admin_commands = commands + [
+            telebot.types.BotCommand("schedule", "Get your daily schedule"),
             telebot.types.BotCommand("broadcast", "Send mass message"),
             telebot.types.BotCommand("reply", "Reply to anon question"),
             telebot.types.BotCommand("stats", "View community stats"),
