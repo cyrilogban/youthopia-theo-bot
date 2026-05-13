@@ -1,6 +1,5 @@
 # theo/app/main.py
 import logging
-
 import time
 
 """
@@ -105,26 +104,25 @@ def main() -> None:
     try:
         # 1. Default commands for everyone
         commands = [
-            telebot.types.BotCommand("start", "Begin using Theo"),
-            telebot.types.BotCommand("verse", "Get a scripture"),
-            telebot.types.BotCommand("profile", "View your profile"),
-            telebot.types.BotCommand("status", "Check subscription status"),
-            telebot.types.BotCommand("enable_votd", "Enable daily verses"),
-            telebot.types.BotCommand("disable_votd", "Stop daily verses"),
-            telebot.types.BotCommand("translation", "Change Bible version"),
-            telebot.types.BotCommand("help", "Show all commands"),
+            telebot.types.BotCommand("start", "Welcome & Setup"),
+            telebot.types.BotCommand("profile", "My Profile"),
+            telebot.types.BotCommand("status", "Subscription Status"),
+            telebot.types.BotCommand("enable_votd", "Daily Verse ON"),
+            telebot.types.BotCommand("disable_votd", "Daily Verse OFF"),
+            telebot.types.BotCommand("translation", "Bible Translation"),
+            telebot.types.BotCommand("help", "Help & Support"),
         ]
         bot.set_my_commands(commands)
 
         # 2. Admin commands (Default + Admin Tools)
         admin_commands = commands + [
-            telebot.types.BotCommand("schedule", "Get your daily schedule"),
+            telebot.types.BotCommand("schedule", "My Daily Schedule"),
             telebot.types.BotCommand("broadcast", "Send mass message"),
-            telebot.types.BotCommand("reply", "Reply to anon question"),
-            telebot.types.BotCommand("stats", "View community stats"),
-            telebot.types.BotCommand("addverse", "Add verse to database"),
-            telebot.types.BotCommand("whitelist", "Authorize this group"),
-            telebot.types.BotCommand("unwhitelist", "Deauthorize this group"),
+            telebot.types.BotCommand("reply", "Anonymous Reply"),
+            telebot.types.BotCommand("stats", "Community Stats"),
+            telebot.types.BotCommand("addverse", "Database Entry"),
+            telebot.types.BotCommand("whitelist", "Group Authorization"),
+            telebot.types.BotCommand("unwhitelist", "Group Deauthorization"),
         ]
 
         # Apply admin menu specifically to each admin's private chat
