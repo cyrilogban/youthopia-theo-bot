@@ -105,7 +105,6 @@ def main() -> None:
         # 1. Default commands for everyone
         commands = [
             telebot.types.BotCommand("start", "Welcome & Setup"),
-            telebot.types.BotCommand("profile", "My Profile"),
             telebot.types.BotCommand("status", "Subscription Status"),
             telebot.types.BotCommand("enable_votd", "Daily Verse ON"),
             telebot.types.BotCommand("disable_votd", "Daily Verse OFF"),
