@@ -43,11 +43,15 @@ In main.py, I create the bot separately:
 
 Then I pass it into the scheduler:
 
-    start_scheduler(lambda: daily_job(container, bot))
+    start_scheduler(
+        lambda: calendar_job(container, bot),
+        lambda: votd_job(container, bot)
+    )
 
-In schedule_service.py, the function receives:
+In schedule_service.py, the functions receive:
 
-    daily_job(container, bot)
+    calendar_job(container, bot)
+    votd_job(container, bot)
 
 So the container handles database logic,
 and the bot handles sending messages.
@@ -82,7 +86,7 @@ from theo.adapters.telegram.bot import create_bot
 from theo.adapters.telegram.router import register_routes
 
 from theo.infra.scheduler.aps import start_scheduler
-from theo.core.services.schedule_service import daily_job
+from theo.core.services.schedule_service import calendar_job, votd_job
 from theo.app.keep_alive import keep_alive
 
 logger = logging.getLogger(__name__)
@@ -141,7 +145,10 @@ def main() -> None:
     register_routes(bot, container)
 
     # scheduler job receives bot as an argument
-    start_scheduler(lambda: daily_job(container, bot))
+    start_scheduler(
+        lambda: calendar_job(container, bot),
+        lambda: votd_job(container, bot)
+    )
 
     logger.info("Theo v2 starting polling...")
 

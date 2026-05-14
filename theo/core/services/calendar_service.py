@@ -33,13 +33,20 @@ class CalendarService:
         
         for event in all_events:
             start = event['start'].get('dateTime', event['start'].get('date'))
+            end = event.get('end', {}).get('dateTime', event.get('end', {}).get('date'))
             summary = event.get('summary', 'No Title')
             
             if 'T' in start:
                 # Timed event
-                dt = datetime.fromisoformat(start.replace('Z', '+00:00'))
-                time_str = dt.strftime("%I:%M %p")
-                summary_lines.append(f"🔹 {time_str} - {summary}")
+                start_dt = datetime.fromisoformat(start.replace('Z', '+00:00'))
+                start_str = start_dt.strftime("%I:%M %p")
+                
+                if end and 'T' in end:
+                    end_dt = datetime.fromisoformat(end.replace('Z', '+00:00'))
+                    end_str = end_dt.strftime("%I:%M %p")
+                    summary_lines.append(f"🔹 {start_str} - {end_str} - {summary}")
+                else:
+                    summary_lines.append(f"🔹 {start_str} - {summary}")
             else:
                 # All-day event
                 summary_lines.append(f"🔹 [All Day] {summary}")

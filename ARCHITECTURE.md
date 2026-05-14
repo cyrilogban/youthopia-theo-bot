@@ -39,7 +39,10 @@ The container stores infrastructure dependencies only.
 Example:
 
 ```python
-start_scheduler(lambda: daily_job(container, bot))
+start_scheduler(
+    lambda: calendar_job(container, bot),
+    lambda: votd_job(container, bot)
+)
 ```
 
 This keeps infrastructure independent from Telegram-specific runtime objects.
@@ -129,15 +132,22 @@ Notes:
 Scheduler:
 
 - APScheduler background cron
-- Runs daily at **06:00 Africa/Lagos**
+- **Calendar Job**: Runs daily at **01:00 Africa/Lagos** for admin summaries.
+- **VOTD Job**: Runs daily at **06:00 Africa/Lagos** for group verse delivery.
 
-Job flow:
+Job flows:
 
-1. Load all enabled chats from MongoDB
-2. Resolve the day's VOTD category
-3. Select/resolve today's shared verse reference
-4. Fetch verse text (translation-aware per chat)
-5. Deliver message to each enabled chat (DM or group context)
+### Calendar Job
+1. Fetch admin events from Google Calendar.
+2. Generate daily summary.
+3. Deliver message to primary admin.
+
+### VOTD Job
+1. Load all enabled chats from MongoDB.
+2. Resolve the day's VOTD category.
+3. Select/resolve today's shared verse reference.
+4. Fetch verse text (translation-aware per chat).
+5. Deliver message to each enabled chat (DM or group context).
 
 ---
 

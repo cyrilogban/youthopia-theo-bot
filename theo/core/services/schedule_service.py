@@ -22,8 +22,8 @@ from theo.core.services.tone_service import get_tone_intro
 logger = logging.getLogger(__name__)
 
 
-def daily_job(container: Container, bot: TeleBot) -> None:
-    logger.info("Scheduler triggered daily_job()")
+def calendar_job(container: Container, bot: TeleBot) -> None:
+    logger.info("Scheduler triggered calendar_job()")
 
     # 1. Daily Calendar Reminders for Admin
     admin_ids = container.settings.admin_ids
@@ -38,6 +38,10 @@ def daily_job(container: Container, bot: TeleBot) -> None:
         except Exception as e:
             logger.error(f"Failed to send daily calendar summary to admin: {e}")
             logger.exception("Full traceback:")
+
+
+def votd_job(container: Container, bot: TeleBot) -> None:
+    logger.info("Scheduler triggered votd_job()")
 
     # 2. Daily VOTD for Groups
     repo = container.group_repo
