@@ -189,14 +189,14 @@ def register_admin(bot: telebot.TeleBot, container: Container) -> None:
             logger.error(f"Failed to fetch schedule for admin {user_id}: {e}")
             bot.send_message(message.chat.id, f"❌ Could not fetch your calendar: {str(e)}")
 
-    @bot.message_handler(func=lambda m: m.text == "Mass Broadcast")
+    @bot.message_handler(func=lambda m: m.text == "Send to YouThopia Bible Community")
     def on_grid_broadcast(message: telebot.types.Message) -> None:
         user_id = message.from_user.id
         if user_id not in container.settings.admin_ids:
             return
 
         instructions = (
-            "📣 *Mass Broadcast*\n\n"
+            "📣 *Send to YouThopia Bible Community*\n\n"
             "To send a message to all subscribers, use the following command:\n\n"
             "`/broadcast <your message here>`"
         )

@@ -79,6 +79,8 @@ def build_admin_main_menu_keyboard() -> ReplyKeyboardMarkup:
     )
     keyboard.row(
         KeyboardButton("My Schedule"),
-        KeyboardButton("Mass Broadcast"),
+    )
+    keyboard.row(
+        KeyboardButton("Send to YouThopia Bible Community"),
     )
     return keyboard
