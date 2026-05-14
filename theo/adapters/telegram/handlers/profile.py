@@ -170,19 +170,13 @@ def register_profile(bot: telebot.TeleBot, container: Container) -> None:
         text = (
             f"🔔 *Daily Verse Subscription*\n\n"
             f"Current Status: *{status_text}*\n\n"
-            "When enabled, you will receive a curated verse every morning at 6 AM."
+            "When enabled, you will receive a curated verse every morning at 6 AM.\n\n"
+            "Use /enable_votd to subscribe or /disable_votd to stop receiving verses."
         )
         
-        keyboard = InlineKeyboardMarkup()
-        if is_enabled:
-            keyboard.row(InlineKeyboardButton("Disable Daily Verses", callback_data="start|disable_votd"))
-        else:
-            keyboard.row(InlineKeyboardButton("Enable Daily Verses", callback_data="start|enable_votd"))
-            
         bot.send_message(
             message.chat.id,
             text,
-            reply_markup=keyboard,
             parse_mode="Markdown"
         )
 
